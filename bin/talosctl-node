@@ -1,0 +1,6 @@
+#!/usr/bin/env bash
+set -eEuo pipefail
+test -z "${DEBUG:-}" || set -x
+test -n "${KDN_TALOS_DIR:-}" || eval "$(cd "${BASH_SOURCE[0]%/*}" && direnv export bash)"
+
+. talosctl --nodes "$(talos-cfg -r ".nodes.${1}.lan.ip")" "${@:2}"

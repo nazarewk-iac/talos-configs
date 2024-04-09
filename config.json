@@ -1,0 +1,36 @@
+{
+  "talos": {
+    "version": "1.6.6"
+  },
+  "cluster": {
+    "name": "pic",
+    "vip": "192.168.41.5",
+    "domain": "pic.kdn.im"
+  },
+  "nodes": {
+    "rant": {
+      "type": "controlplane",
+      "lan": {
+        "dns": "rant.lan.",
+        "mac": "DC:A6:32:7A:22:22",
+        "ip": "192.168.41.157"
+      }
+    },
+    "hurl": {
+      "type": "controlplane",
+      "lan": {
+        "dns": "hurl.lan.",
+        "mac": "DC:A6:32:7A:21:E3",
+        "ip": "192.168.41.166"
+      }
+    },
+    "jhal": {
+      "type": "controlplane",
+      "lan": {
+        "dns": "jhal.lan.",
+        "mac": "DC:A6:32:7A:22:2B",
+        "ip": "192.168.41.167"
+      }
+    }
+  }
+}

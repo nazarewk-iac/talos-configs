@@ -1,0 +1,97 @@
+apiVersion: apps/v1
+kind: DaemonSet
+metadata:
+  name: nix-daemon
+  namespace: nix-system
+  labels:
+    k8s-app: nix-daemon
+spec:
+  selector:
+    matchLabels:
+      name: nix-daemon
+  template:
+    metadata:
+      labels:
+        name: nix-daemon
+    spec:
+      tolerations:
+        # these tolerations are to have the daemonset runnable on control plane nodes
+        # remove them if your control plane nodes should not run pods
+        - key: node-role.kubernetes.io/control-plane
+          operator: Exists
+          effect: NoSchedule
+        - key: node-role.kubernetes.io/master
+          operator: Exists
+          effect: NoSchedule
+      initContainers:
+        - name: nix-init
+          image: docker.io/nixos/nix
+          command: ["/usr/bin/env", "bash"]
+          args:
+            - '-c'
+            - |-
+              set -xeEuo pipefail
+              cp -aT --update=older /nix /host/nix
+          resources:
+            limits:
+              memory: 64Mi
+            requests:
+              cpu: 10m
+              memory: 8Mi
+          volumeMounts:
+            - name: host-nix
+              mountPath: /host/nix
+
+      containers:
+        - name: nix-daemon
+          image: docker.io/nixos/nix
+          command: ["/usr/bin/env", "bash"]
+          args:
+            - '-c'
+            - |-
+              set -xeEuo pipefail
+              nix daemon --force-trusted
+          resources:
+            limits:
+              memory: 2Gi
+            requests:
+              cpu: 500m
+              memory: 128Mi
+          envFrom:
+            - configMapRef:
+                name: nix-daemon-env
+            - secretRef:
+                name: nix-daemon-env
+          securityContext:
+            privileged: true
+          volumeMounts:
+            - name: etc-nix
+              mountPath: /etc/nix
+            - name: host-fs
+              mountPropagation: HostToContainer
+              mountPath: /hostfs
+            - name: host-dev
+              mountPropagation: HostToContainer
+              mountPath: /dev
+            - name: host-nix
+              mountPropagation: HostToContainer
+              mountPath: /nix
+
+      terminationGracePeriodSeconds: 30
+      volumes:
+        - name: etc-nix
+          projected:
+            sources:
+              - configMap:
+                  name: nix-files
+              - secret:
+                  name: nix-files
+        - name: host-fs
+          hostPath:
+            path: /
+        - name: host-dev
+          hostPath:
+            path: /dev
+        - name: host-nix
+          hostPath:
+            path: /var/lib/nix

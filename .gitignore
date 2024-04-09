@@ -1,0 +1,62 @@
+###
+### START ignore everything
+###
+# ignore everything by default
+*
+# do not ignore directories (still ignores their content)
+!*/
+# still ignore directiories with a leading dot
+.*/
+# do not ignore .gitignore files
+!.gitignore
+###
+### END ignore everything
+###
+
+!*.nix
+.*.nix
+!*.patch
+!*.sh
+
+!/bin/talos*
+!/config.json
+!/patches/**/*.yaml
+
+# shareable Jetbrains files
+!.idea/modules.xml
+!.idea/watcherTasks.xml
+!.idea/vcs.xml
+!.idea/misc.xml
+!*.iml
+
+###
+### START divnix/std
+###
+!*.md
+!/.envrc
+!/flake.nix
+!/flake.lock
+
+# Nix related
+!/cells/**/*.nix
+
+# prj-spec dirs
+# <https://github.com/numtide/prj-spec>
+/.bin/
+/.cache/
+/.config/
+/.data/
+/.run/
+
+# nixago: ignore-linked-files
+/.conform.yaml
+/.editorconfig
+/book.toml
+/lefthook.yml
+/treefmt.toml
+
+# nixago-auto-created: mdbook-build-folder
+/docs/build
+###
+### END divnix/std
+###

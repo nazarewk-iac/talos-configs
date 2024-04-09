@@ -1,0 +1,25 @@
+#!/usr/bin/env bash
+set -eEuo pipefail
+test -z "${DEBUG:-}" || set -x
+test -n "${KDN_TALOS_DIR:-}" || eval "$(cd "${BASH_SOURCE[0]%/*}" && direnv export bash)"
+
+nodes=()
+args=()
+
+
+while [[ $# -gt 0 ]]; do
+  case "$1" in
+  --*)
+    args+=("$1")
+    shift
+    ;;
+  *)
+    nodes+=("$1")
+    shift
+    ;;
+  esac
+done
+
+for node in "${nodes[@]}"; do
+  . talosctl-node "$node" apply-config --file "cache/node-${node}.yaml" "${args[@]}"
+done

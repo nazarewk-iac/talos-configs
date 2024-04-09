@@ -1,0 +1,13 @@
+machine:
+  install:
+  network:
+    hostname: hurl
+    interfaces:
+      - deviceSelector:
+          hardwareAddr: 'dc:a6:32:7a:21:e3'
+        dhcp: true
+        vip:
+         ip: '192.168.41.5'
+
+cluster:
+  allowSchedulingOnControlPlanes: true

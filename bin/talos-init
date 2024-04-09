@@ -1,0 +1,113 @@
+#!/usr/bin/env bash
+set -eEuo pipefail
+test -z "${DEBUG:-}" || set -x
+test -n "${KDN_TALOS_DIR:-}" || eval "$(cd "${BASH_SOURCE[0]%/*}" && direnv export bash)"
+
+gen_config() {
+  talosctl gen config "${config_args[@]}" "$@"
+}
+
+gen_node() {
+  local name="$1" type args=("${config_args[@]}")
+  type="$(talos-cfg -r ".nodes.${name}.type")"
+
+  mapfile -t patch_files < <(find "${patches}" -name "node-${name}*.yaml")
+  for patch_file in "${patch_files[@]}" ; do
+    args+=(--config-patch="@${patch_file}")
+  done
+  args+=(--output="${cache}/node-$name.yaml")
+  args+=(--output-types="$type")
+  # TODO: how to add multiple?
+  args+=(--additional-sans="$(talos-cfg -r ".nodes.${name}.lan.dns")")
+
+  talosctl gen config "${args[@]}"
+}
+
+maybe_redirect() {
+   if test "${INFO:-"1"}" == 1 ; then
+    cat >&2
+  else
+    cat >/dev/null
+  fi
+}
+
+main() {
+  export _talos_init=0
+
+  base="${KDN_TALOS_DIR}"
+  cd "${base}"
+  patches="${base}/patches"
+  state="${base}/state"
+  cache="${base}/cache"
+
+  secrets="${state}/secrets.yaml"
+
+  endpoints=()
+  mapfile -t controlplane_ips < <(talos-cfg-nodes -r 'select(.type == "controlplane").lan.ip')
+  mapfile -t node_names < <(talos-cfg-nodes -r 'select((.type // "") != "").name')
+  mapfile -t node_addresses < <(talos-cfg-nodes -r 'select((.type // "") != "").lan.dns')
+  running_nodes=()
+
+  echo "controlplane IPs:"
+  printf " - %s\n" "${controlplane_ips[@]}"
+  echo "node names:"
+  printf " - %s\n" "${node_names[@]}"
+  echo "node addresses:"
+  printf " - %s\n" "${node_addresses[@]}"
+
+  for ip in "${controlplane_ips[@]}"; do
+    nc -w 2 -z "${ip}" 50000  &>/dev/null || continue
+    talosctl --nodes "${ip}" time &>/dev/null || continue
+    endpoints+=("${ip}")
+  done
+
+  for addr in "${node_addresses[@]}"; do
+    nc -w 2 -z "${addr}" 50000  &>/dev/null || continue
+    talosctl --nodes "${addr}" time &>/dev/null || continue
+    running_nodes+=("${addr}")
+  done
+
+  test "${#endpoints[@]}" -gt 0 || endpoints=("${controlplane_ips[0]}")
+
+  echo "endpoints:"
+  printf " - %s\n" "${endpoints[@]}"
+  echo "running nodes:"
+  printf " - %s\n" "${running_nodes[@]}"
+
+#  vip="$(talos-cfg -r '.cluster.vip')"
+#  if nc -w 1 -z "${vip}" 6443; then
+#    kubernetes_endpoint="https://${vip}:6443"
+#  else
+#    kubernetes_endpoint="https://${endpoints[0]}:6443"
+#  fi
+  kubernetes_endpoint="https://${endpoints[0]}:6443"
+  echo "kubernetes_endpoint: ${kubernetes_endpoint}"
+
+  config_args=(
+    "$(talos-cfg -r '.cluster.name')" "${kubernetes_endpoint}"
+    --force --output="${state}" --talos-version="v$(talos-cfg -r '.talos.version')"
+    --with-secrets="${secrets}"
+    --dns-domain="$(talos-cfg -r '.cluster.domain')"
+    --config-patch="@${patches}/all.yaml"
+    --config-patch-control-plane="@${patches}/controlplane.yaml"
+    --config-patch-worker="@${patches}/worker.yaml"
+  )
+
+  mapfile -t patches_all < <(find "${patches}/all.yaml.d" -name '*.yaml')
+  for patch in "${patches_all[@]}" ; do
+    config_args+=(--config-patch="@${patch}")
+  done
+
+  mkdir -p "${state}"
+  test -e "${secrets}" || talosctl gen secrets --output-file="${secrets}"
+  gen_config --output="${HOME}/.talos/config" --output-types=talosconfig
+  # see https://github.com/siderolabs/talos/blob/465b9a4e6ca9367326cb862b501f1146989b07d4/cmd/talosctl/cmd/mgmt/gen/config.go#L173-L174
+  talosctl config endpoint "${endpoints[@]}"
+  talosctl config node "${running_nodes[@]}"
+
+  for node in "${node_names[@]}"; do
+    gen_node "${node}"
+  done
+}
+
+main "$@" |& maybe_redirect

@@ -1,0 +1,53 @@
+apiVersion: apps/v1
+kind: DaemonSet
+metadata:
+  name: debug-shell
+  namespace: kube-system
+  labels:
+    k8s-app: debug-shell
+spec:
+  selector:
+    matchLabels:
+      name: debug-shell
+  template:
+    metadata:
+      labels:
+        name: debug-shell
+    spec:
+      tolerations:
+        # these tolerations are to have the daemonset runnable on control plane nodes
+        # remove them if your control plane nodes should not run pods
+        - key: node-role.kubernetes.io/control-plane
+          operator: Exists
+          effect: NoSchedule
+        - key: node-role.kubernetes.io/master
+          operator: Exists
+          effect: NoSchedule
+      containers:
+        - name: debug-shell
+          image: nicolaka/netshoot:v0.12
+          command: ["/bin/bash"]
+          args: ["-c", "sleep infinity"]
+          securityContext:
+            privileged: true
+          resources:
+            limits:
+              memory: 512Mi
+            requests:
+              cpu: 100m
+              memory: 256Mi
+          volumeMounts:
+            - name: host
+              mountPath: /hostfs
+            - name: host
+              mountPath: /dev
+              subpath: dev/
+
+      terminationGracePeriodSeconds: 30
+      volumes:
+        - name: host-dev
+          hostPath:
+            path: /dev
+        - name: host
+          hostPath:
+            path: /

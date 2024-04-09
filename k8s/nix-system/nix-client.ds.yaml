@@ -1,0 +1,79 @@
+apiVersion: apps/v1
+kind: DaemonSet
+metadata:
+  name: nix-client
+  namespace: nix-system
+  labels:
+    k8s-app: nix-client
+spec:
+  selector:
+    matchLabels:
+      name: nix-client
+  template:
+    metadata:
+      labels:
+        name: nix-client
+    spec:
+
+      terminationGracePeriodSeconds: 5
+      tolerations:
+        # these tolerations are to have the daemonset runnable on control plane nodes
+        # remove them if your control plane nodes should not run pods
+        - key: node-role.kubernetes.io/control-plane
+          operator: Exists
+          effect: NoSchedule
+        - key: node-role.kubernetes.io/master
+          operator: Exists
+          effect: NoSchedule
+      containers:
+        - name: nix
+          image: docker.io/nixos/nix
+          command: ["/usr/bin/env", "bash"]
+          args:
+            - '-c'
+            - |-
+              set -xeEuo pipefail
+              main () {
+                until test -S /nix/var/nix/daemon-socket/socket ; do
+                  sleep $((RANDOM % 3))
+                done
+                nix run --show-trace --print-build-logs --verbose 'nixpkgs#jq' -- -nS env
+                set +x
+                while true; do sleep $((RANDOM % 10)); done
+              }
+              main "$@" >&2
+          resources:
+            limits:
+              memory: 2Gi
+            requests:
+              cpu: 50m
+              memory: 32Mi
+          envFrom: &envFrom
+            - configMapRef:
+                name: nix-client-env
+            - secretRef:
+                name: nix-client-env
+          volumeMounts: &volumeMounts
+            - name: etc-nix
+              mountPath: /etc/nix
+            - name: host-nix-store
+              mountPath: /nix/store
+            - name: host-nix-socket
+              mountPath: /nix/var/nix/daemon-socket/socket
+
+      volumes:
+        - name: etc-nix
+          projected:
+            sources:
+              - configMap:
+                  name: nix-files
+              - secret:
+                  name: nix-files
+        - name: host-nix-store
+          hostPath:
+            path: /var/lib/nix/store
+        - name: host-nix-socket
+          hostPath:
+            type: Socket
+            path: /var/lib/nix/var/nix/daemon-socket/socket
+

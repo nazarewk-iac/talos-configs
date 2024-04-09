@@ -1,0 +1,8 @@
+#!/usr/bin/env bash
+set -eEuo pipefail
+test -z "${DEBUG:-}" || set -x
+test -n "${KDN_TALOS_DIR:-}" || eval "$(cd "${BASH_SOURCE[0]%/*}" && direnv export bash)"
+
+disk="$1"
+test -e "${disk}"
+xz -d --stdout "$(talos-file metal-rpi_generic-arm64.raw.xz)" | sudo dd if=/dev/stdin conv=fsync bs=4M status=progress of="${disk}"
