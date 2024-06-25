@@ -1,4 +1,5 @@
 # talos-configs
+
 Repository containing my personal Talos Kubernetes configurations
 
 # overview
@@ -50,11 +51,15 @@ to [Luke Carrier]() at Matrix chat
 5. set up #rpi4-uefi (go back with `F10` > `Y` > `ESC` to save settings whenever possible)
     - `Device Manager`
         - `Rasbperry Pi Configuration`
+            - `Display Configuration`
+                - enable `Virtual 720p` and nothing else
+                    - this is the most legible option on Gembird UHG-4K2-01 HDMI
+                      grabber https://gembird.com/item.aspx?id=12083
             - `Advanced Configuration`
                 - disable `Limit RAM to 3 GB`
-    - `Boot Discovery Policy`
-        - set to `Minimal`
     - `Boot Maintenance Manager`
+        - `Boot Discovery Policy`
+            - set to `Minimal`
         - (optionally) change `Auto Boot Time-out` from `5` to `1` for faster boot
         - `Boot Options`
             - `Change Boot Order`
