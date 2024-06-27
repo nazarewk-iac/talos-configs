@@ -1,0 +1,89 @@
+#!/usr/bin/env bash
+set -eEuo pipefail
+test -z "${DEBUG:-}" || set -x
+test -n "${KDN_TALOS_DIR:-}" || eval "$(cd "${BASH_SOURCE[0]%/*}" && direnv export bash)"
+
+pass() {
+  command pass "$@"
+}
+
+cmd_exists() {
+  test -e "${gpg_path}"
+}
+
+cmd_read() {
+  pass show "${pass_path}"
+}
+
+cmd_write() {
+  pass insert --multiline "$@" "${pass_path}" >/dev/null
+}
+
+cmd_edit() {
+  pass edit "${pass_path}"
+}
+
+cmd_sync() {
+  local gpg_exists=y repo_exists=y
+  test -e "${gpg_path}" || gpg_exists=
+  test -e "${repo_path}" || repo_exists=
+  if test "${gpg_exists}${repo_exists}" != yy; then
+    echo "ERROR: neither ${repo_path} nor ${gpg_path} exist" >&2
+    return 1
+  elif ! test -e "${repo_path}" || test "${gpg_path}" -nt "${repo_path}"; then
+    if diff "${repo_path}" <(cmd_read); then
+      echo "OK: ${filename} up to date" >&2
+    else
+      echo "CHANGE: updating REPO ${repo_path}" >&2
+      cmd_read >"${repo_path}"
+    fi
+  elif ! test -e "${gpg_path}" || test "${repo_path}" -nt "${gpg_path}"; then
+    if diff <(cmd_read) "${repo_path}"; then
+      echo "OK: ${filename} up to date" >&2
+    else
+      echo "CHANGE: updating GPG ${gpg_path}" >&2
+      cmd_write --force <"${repo_path}"
+    fi
+  else
+    echo "OK: nothing to be done for ${filename}"
+  fi
+}
+
+cmd_sync_dir() {
+  local dir="${cmd_args[0]}"
+  find "$dir" -type f -not -name '.*' -print0 | while IFS= read -r -d '' arg; do
+    handle_arg sync "$arg"
+  done
+}
+
+handle_arg() {
+  local cmd="$1" filename="$2"
+  shift 1
+  cmd_args=("${@}")
+
+  repo_path="${KDN_TALOS_DIR}/${filename}"
+  pass_path="k8s/${cluster_name}/talos/${filename}"
+  gpg_path="${PASSWORD_STORE_DIR:-"$HOME/.password-store"}/${pass_path}.gpg"
+
+  cmd_"${cmd//"-"/"_"}"
+}
+
+if test $# -lt 2; then
+  cmd="${BASH_SOURCE[0]##*/}"
+  cmd="${cmd%.sh}"
+  cmd="${cmd##*.}"
+
+  filename="$(realpath -s "${BASH_SOURCE[0]}")"
+  filename="${filename%.*.sh}"
+  filename="${filename#"${KDN_TALOS_DIR}"}"
+  main_args=("${filename}")
+else
+  cmd="$1"
+  shift 1
+  main_args=("$@")
+fi
+
+cluster_name="$(talos-cfg -r .cluster.name)"
+for arg in "${main_args[@]}"; do
+  (handle_arg "${cmd}" "${arg}")
+done

@@ -3,4 +3,6 @@ set -eEuo pipefail
 test -z "${DEBUG:-}" || set -x
 test -n "${KDN_TALOS_DIR:-}" || eval "$(cd "${BASH_SOURCE[0]%/*}" && direnv export bash)"
 
-jq "$@" <"${KDN_TALOS_DIR}/config.json"
+node="$1"
+shift
+talosctl-node "${node}" upgrade --image "$(talos-image upgrade default)" "$@"

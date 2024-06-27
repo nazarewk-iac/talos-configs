@@ -1,1 +1,18 @@
-../../state/all.yaml.d/disk-encryption.yaml
+machine:
+  systemDiskEncryption:
+    ephemeral:
+      provider: luks2
+      keys:
+        - nodeID: {}
+          slot: 0
+        - static:
+            passphrase: null # fill in at state/all.yaml.d/disk-encryption.yaml
+          slot: 1
+    state:
+      provider: luks2
+      keys:
+        - nodeID: {}
+          slot: 0
+        - static:
+            passphrase: null # fill in at state/all.yaml.d/disk-encryption.yaml
+          slot: 1

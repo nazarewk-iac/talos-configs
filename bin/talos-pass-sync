@@ -3,4 +3,4 @@ set -eEuo pipefail
 test -z "${DEBUG:-}" || set -x
 test -n "${KDN_TALOS_DIR:-}" || eval "$(cd "${BASH_SOURCE[0]%/*}" && direnv export bash)"
 
-jq "$@" <"${KDN_TALOS_DIR}/config.json"
+talos-pass sync-dir state

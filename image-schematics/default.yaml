@@ -1,0 +1,9 @@
+overlay:
+  image: siderolabs/sbc-raspberrypi
+  name: rpi_generic
+customization:
+  systemExtensions:
+    officialExtensions:
+      - siderolabs/iscsi-tools
+      - siderolabs/zfs
+      - siderolabs/util-linux-tools

@@ -21,6 +21,7 @@
 !/bin/talos*
 !/config.json
 !/patches/**/*.yaml
+!/image-schematics/*.yaml
 
 # shareable Jetbrains files
 !.idea/modules.xml

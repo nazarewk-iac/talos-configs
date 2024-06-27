@@ -8,7 +8,5 @@ __talosctl_args=(
   --cluster="$(talos-cfg -r '.cluster.name')"
 )
 
-#test "${_talos_init:-"1"}" == "0" || . talos-init >&2
-
 test -n "${DEBUG:-}" || test "${INFO:-"1"}" == 0 || echo "[TALOSCTL]" "${cmd}" "${__talosctl_args[@]}" "$@" >&2
-"${cmd}" "${__talosctl_args[@]}" "$@"
+HOME="${TALOS_HOME}" "${cmd}" "${__talosctl_args[@]}" "$@"

@@ -109,3 +109,22 @@ rant.lan.   /dev/sdb       Super Speed   -            HDD    -      t10.USB3.0  
 hurl.lan.   /dev/sda       Super Speed   -            HDD    -      t10.USB3.0  Super Speed     DD564198838A3\0\0\0   scsi:t-0x00   -       256 GB   /system/container/ACPI0004:02/PNP0D10:00/usb3/3-2/3-2:1.0/host0/target0:0:0/0:0:0:0/           /sys/class/block               *
 jhal.lan.   /dev/sda       Super Speed   -            HDD    -      t10.USB3.0  Super Speed     DD564198838A3\0\0\0   scsi:t-0x00   -       256 GB   /system/container/ACPI0004:02/PNP0D10:00/usb3/3-2/3-2:1.0/host0/target0:0:0/0:0:0:0/           /sys/class/block               *
 ```
+
+# updating/upgrading
+
+## upgrading install image (extensions etc.)
+
+
+```shell
+talos-upgrade hurl
+```
+
+might need to run `talos-apply hurl` after reboot to load the ZFS kernel module before the boot finishes
+
+debug system messages with `talosctl-node hurl dmesg --follow`
+
+## updating machine config
+
+```shell
+talos-apply hurl
+```

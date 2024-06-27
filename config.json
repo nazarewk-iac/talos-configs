@@ -1,6 +1,6 @@
 {
   "talos": {
-    "version": "1.6.6"
+    "version": "1.7.5"
   },
   "cluster": {
     "name": "pic",

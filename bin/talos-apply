@@ -6,7 +6,6 @@ test -n "${KDN_TALOS_DIR:-}" || eval "$(cd "${BASH_SOURCE[0]%/*}" && direnv expo
 nodes=()
 args=()
 
-
 while [[ $# -gt 0 ]]; do
   case "$1" in
   --*)
@@ -21,5 +20,5 @@ while [[ $# -gt 0 ]]; do
 done
 
 for node in "${nodes[@]}"; do
-  . talosctl-node "$node" apply-config --file "cache/node-${node}.yaml" "${args[@]}"
+  . talosctl-node "$node" apply-config --file="cache/node-${node}.yaml" "${args[@]}"
 done

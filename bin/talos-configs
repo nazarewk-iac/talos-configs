@@ -1,0 +1,38 @@
+#!/usr/bin/env bash
+set -eEuo pipefail
+test -z "${DEBUG:-}" || set -x
+test -n "${KDN_TALOS_DIR:-}" || eval "$(cd "${BASH_SOURCE[0]%/*}" && direnv export bash)"
+
+find_configs() {
+  find_files "${KDN_TALOS_DIR}/patches" yaml "$@"
+  find_files "${KDN_TALOS_DIR}/state" yaml "$@"
+}
+
+find_files() {
+  local base_dir="$1" extension="$2" filenames=() args=() search_names=()
+  shift 2
+
+  for arg in "$@"; do
+    if test "${#args[@]}" == 0 && test "x$arg" == "x--"; then
+      args=("${filenames[@]}")
+      filenames=()
+    else
+      filenames+=("$arg")
+    fi
+  done
+
+  for filename in "${filenames[@]}"; do
+    search_names=()
+    for file in "${base_dir}/${filename}" "${base_dir}/${filename}.d"; do
+      test -e "${file}" || continue
+      search_names+=("${file}")
+    done
+    test "${#search_names[@]}" -eq 0 || find "${search_names[@]}" \
+      -maxdepth 1 \
+      -not '(' -type d ')' \
+      -name "*.${extension}" \
+      "${args[@]}"
+  done
+}
+
+find_configs "$@"

@@ -4,5 +4,9 @@ test -z "${DEBUG:-}" || set -x
 test -n "${KDN_TALOS_DIR:-}" || eval "$(cd "${BASH_SOURCE[0]%/*}" && direnv export bash)"
 
 disk="$1"
-test -e "${disk}"
-xz -d --stdout "$(talos-file metal-rpi_generic-arm64.raw.xz)" | sudo dd if=/dev/stdin conv=fsync bs=4M status=progress of="${disk}"
+image="${2:-"default"}"
+url="$(talos-image install "${image}")"
+version="$(talos-cfg -r .talos.version)"
+out="${KDN_TALOS_DIR}/talos-${version}/${image}.metal-arm64.raw.xz"
+test -e "$out" || curl --fail "${url}" -o "$out"
+xz -d --stdout "$out" | sudo dd if=/dev/stdin conv=fsync bs=4M status=progress of="${disk}"

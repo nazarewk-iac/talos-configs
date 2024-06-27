@@ -1,0 +1,35 @@
+#!/usr/bin/env bash
+set -eEuo pipefail
+test -z "${DEBUG:-}" || set -x
+test -n "${KDN_TALOS_DIR:-}" || eval "$(cd "${BASH_SOURCE[0]%/*}" && direnv export bash)"
+
+action="${1:-upgrade}"
+name="${2:-default}"
+spec="${KDN_TALOS_DIR}/image-schematics/${name}.yaml"
+
+id="$(curl --silent --fail -X POST --data-binary "@${spec}" https://factory.talos.dev/schematics | jq -r .id)"
+version="$(talos-cfg -r .talos.version)"
+upgrade_url="factory.talos.dev/installer/${id}:v${version}"
+install_url="https://factory.talos.dev/image/${id}/v${version}/metal-arm64.raw.xz"
+
+case "${action}" in
+upgrade)
+  echo -n "${upgrade_url}"
+  ;;
+install)
+  echo -n "${install_url}"
+  ;;
+sync)
+  output="${3:-"all"}"
+  cat <<EOF >"${KDN_TALOS_DIR}/patches/${output}.yaml.d/talos-image.yaml"
+# Talos machine configuration patch
+machine:
+  install:
+    image: '${upgrade_url}'
+EOF
+  ;;
+*)
+  echo "Invalid image action: $action" >&2
+  exit 1
+  ;;
+esac
