@@ -32,7 +32,7 @@ Runs on 3x Raspberry Pi 4 4GB, each holding:
     - [x] add ZFS system extension
     - [ ] pin Kubernetes version to upgrade separately from Talos
 - [ ] set up ZFS on LUKS on the 1TB drive for local storage
-- [ ] access from anywhere with Netbird
+- [x] access from anywhere with Netbird
 - [ ] replace disk bay with [`ORICO-6558US3-C`](https://www.orico.cc/us/product/detail/3562.html)
 - [ ] set up Rook/Ceph
 - [ ] separate Ceph configurations for:
