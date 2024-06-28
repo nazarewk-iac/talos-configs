@@ -27,7 +27,7 @@ cmd_sync() {
   local gpg_exists=y repo_exists=y
   test -e "${gpg_path}" || gpg_exists=
   test -e "${repo_path}" || repo_exists=
-  if test "${gpg_exists}${repo_exists}" != yy; then
+  if test "${gpg_exists}${repo_exists}" == ""; then
     echo "ERROR: neither ${repo_path} nor ${gpg_path} exist" >&2
     return 1
   elif ! test -e "${repo_path}" || test "${gpg_path}" -nt "${repo_path}"; then
