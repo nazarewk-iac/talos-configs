@@ -74,13 +74,14 @@ main() {
   echo "running nodes:"
   printf " - %s\n" "${running_nodes[@]}"
 
-  #  vip="$(talos-cfg -r '.cluster.vip')"
-  #  if nc -w 1 -z "${vip}" 6443; then
-  #    kubernetes_endpoint="https://${vip}:6443"
-  #  else
-  #    kubernetes_endpoint="https://${endpoints[0]}:6443"
-  #  fi
+  vip="$(talos-cfg -r '.cluster.vip')"
   kubernetes_endpoint="https://${endpoints[0]}:6443"
+  for ip in "${vip}" "${endpoints[@]}"; do
+    if nc -w 1 -z "${ip}" 6443 &>/dev/null; then
+      kubernetes_endpoint="https://${ip}:6443"
+      break
+    fi
+  done
   echo "kubernetes_endpoint: ${kubernetes_endpoint}"
 
   config_args=(
@@ -104,6 +105,12 @@ main() {
 
   for node in "${node_names[@]}"; do
     gen_node "${node}"
+  done
+
+  for node in "${node_names[@]}"; do
+    if talosctl-node "${node}" kubeconfig --force; then
+      break
+    fi
   done
 }
 
