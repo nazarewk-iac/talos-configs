@@ -1,0 +1,10 @@
+machine:
+  kubelet:
+    extraMounts:
+      - destination: /var/lib/nix
+        type: bind
+        source: /var/lib/nix
+        options:
+          - bind
+          - rshared
+          - rw
