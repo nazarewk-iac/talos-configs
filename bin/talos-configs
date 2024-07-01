@@ -1,11 +1,16 @@
 #!/usr/bin/env bash
 set -eEuo pipefail
 test -z "${DEBUG:-}" || set -x
-test -n "${KDN_TALOS_DIR:-}" || eval "$(cd "${BASH_SOURCE[0]%/*}" && direnv export bash)"
+test -n "${PRJ_ROOT:-}" || eval "$(cd "${BASH_SOURCE[0]%/*}" && direnv export bash)"
+
+handle_file() {
+  local filename="$1"
+  echo "$filename"
+}
 
 find_configs() {
-  find_files "${KDN_TALOS_DIR}/patches" yaml "$@"
-  find_files "${KDN_TALOS_DIR}/state" yaml "$@"
+  find_files "${PRJ_ROOT}/patches" yaml "$@"
+  find_files "${PRJ_ROOT}/state" yaml "$@"
 }
 
 find_files() {
@@ -35,4 +40,10 @@ find_files() {
   done
 }
 
-find_configs "$@"
+main() {
+  find_configs "$@" -print0 | while IFS= read -r -d '' filename; do
+    handle_file "$filename"
+  done
+}
+
+main "$@"

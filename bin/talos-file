@@ -1,12 +1,12 @@
 #!/usr/bin/env bash
 set -eEuo pipefail
 test -z "${DEBUG:-}" || set -x
-test -n "${KDN_TALOS_DIR:-}" || eval "$(cd "${BASH_SOURCE[0]%/*}" && direnv export bash)"
+test -n "${PRJ_ROOT:-}" || eval "$(cd "${BASH_SOURCE[0]%/*}" && direnv export bash)"
 
 filename="$1"
 shift
 version="$(talos-cfg -r .talos.version)"
-out="${KDN_TALOS_DIR}/talos-${version}/${filename}"
+out="${PRJ_ROOT}/talos-${version}/${filename}"
 
 test -e "${out}" || {
   mkdir -p "${out%/*}"

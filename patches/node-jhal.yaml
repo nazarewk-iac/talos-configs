@@ -3,10 +3,10 @@ machine:
     hostname: jhal
     interfaces:
       - deviceSelector:
-          hardwareAddr: 'dc:a6:32:7a:22:2b'
+          hardwareAddr: "dc:a6:32:7a:22:2b"
         dhcp: true
         vip:
-          ip: '192.168.41.5'
+          ip: "192.168.41.5"
 
 cluster:
   allowSchedulingOnControlPlanes: true

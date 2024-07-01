@@ -3,10 +3,10 @@ machine:
     hostname: rant
     interfaces:
       - deviceSelector:
-          hardwareAddr: 'dc:a6:32:7a:22:22'
+          hardwareAddr: "dc:a6:32:7a:22:22"
         dhcp: true
         vip:
-          ip: '192.168.41.5'
+          ip: "192.168.41.5"
 
 cluster:
   allowSchedulingOnControlPlanes: true

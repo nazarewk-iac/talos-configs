@@ -1,11 +1,11 @@
 #!/usr/bin/env bash
 set -eEuo pipefail
 test -z "${DEBUG:-}" || set -x
-test -n "${KDN_TALOS_DIR:-}" || eval "$(cd "${BASH_SOURCE[0]%/*}" && direnv export bash)"
+test -n "${PRJ_ROOT:-}" || eval "$(cd "${BASH_SOURCE[0]%/*}" && direnv export bash)"
 
 action="${1:-upgrade}"
 name="${2:-default}"
-spec="${KDN_TALOS_DIR}/image-schematics/${name}.yaml"
+spec="${PRJ_ROOT}/image-schematics/${name}.yaml"
 
 id="$(curl --silent --fail -X POST --data-binary "@${spec}" https://factory.talos.dev/schematics | jq -r .id)"
 version="$(talos-cfg -r .talos.version)"
@@ -21,7 +21,7 @@ install)
   ;;
 sync)
   output="${3:-"all"}"
-  cat <<EOF >"${KDN_TALOS_DIR}/patches/${output}.yaml.d/talos-image.yaml"
+  cat <<EOF >"${PRJ_ROOT}/patches/${output}.yaml.d/talos-image.yaml"
 # Talos machine configuration patch
 machine:
   install:

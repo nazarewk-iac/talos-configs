@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 set -eEuo pipefail
 test -z "${DEBUG:-}" || set -x
-test -n "${KDN_TALOS_DIR:-}" || eval "$(cd "${BASH_SOURCE[0]%/*}" && direnv export bash)"
+test -n "${PRJ_ROOT:-}" || eval "$(cd "${BASH_SOURCE[0]%/*}" && direnv export bash)"
 # initializes Talos configurations
 
 gen_config() {
@@ -35,12 +35,13 @@ main() {
   talos-pass sync-dir state
   talos-image sync
 
-  base="${KDN_TALOS_DIR}"
+  base="${PRJ_ROOT}"
   cd "${base}"
   state="${base}/state"
   cache="${base}/cache"
 
   secrets="${state}/secrets.yaml"
+  cluster_domain="$(talos-cfg -r '.cluster.domain')"
 
   endpoints=()
   mapfile -t controlplane_ips < <(talos-cfg-nodes -r 'select(.type == "controlplane").lan.ip')
@@ -88,12 +89,12 @@ main() {
     "$(talos-cfg -r '.cluster.name')" "${kubernetes_endpoint}"
     --force --output="${state}" --talos-version="v$(talos-cfg -r '.talos.version')"
     --with-secrets="${secrets}"
-    --dns-domain="$(talos-cfg -r '.cluster.domain')"
+    --dns-domain="${cluster_domain}"
   )
   mapfile -t -O "${#config_args[@]}" config_args < <(
-    talos-configs -printf '--config-patch-control-plane=@%p\n' -- "controlplane.yaml"
-    talos-configs -printf '--config-patch-worker=@%p\n' -- "worker.yaml"
-    talos-configs -printf '--config-patch=@%p\n' -- "all.yaml"
+    talos-configs -- "controlplane.yaml" | sed 's/^/--config-patch-control-plane=@/g'
+    talos-configs -- "worker.yaml" | sed 's/^/--config-patch-worker=@/g'
+    talos-configs -- "all.yaml" | sed 's/^/--config-patch=@/g'
   )
 
   mkdir -p "${state}"

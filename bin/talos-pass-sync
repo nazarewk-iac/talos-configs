@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 set -eEuo pipefail
 test -z "${DEBUG:-}" || set -x
-test -n "${KDN_TALOS_DIR:-}" || eval "$(cd "${BASH_SOURCE[0]%/*}" && direnv export bash)"
+test -n "${PRJ_ROOT:-}" || eval "$(cd "${BASH_SOURCE[0]%/*}" && direnv export bash)"
 
 talos-pass sync-dir state

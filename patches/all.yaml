@@ -1,7 +1,7 @@
 machine:
   install:
     diskSelector:
-      size: '< 300GB'
+      size: "< 300GB"
     #    diskSelector:
     #      # same as rant? probably because same device
     #      wwid: "*DD564198838A3*"
@@ -10,7 +10,7 @@ machine:
       # SK Hynix over Zenwire USB reports as USB bridge (not a disk!)
       # see https://the-sz.com/products/usbid/index.php?v=152d&p=0562&n=
       # this resolves a lot of UAS errors delaying boot by a few minutes
-      - 'usb-storage.quirks=152d:0562:u'
+      - "usb-storage.quirks=152d:0562:u"
   ## provided by all.yaml.d/disk-encryption.yaml
   #systemDiskEncryption:
   #  ephemeral:

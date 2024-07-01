@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 set -eEuo pipefail
 test -z "${DEBUG:-}" || set -x
-test -n "${KDN_TALOS_DIR:-}" || eval "$(cd "${BASH_SOURCE[0]%/*}" && direnv export bash)"
+test -n "${PRJ_ROOT:-}" || eval "$(cd "${BASH_SOURCE[0]%/*}" && direnv export bash)"
 
 pass() {
   command pass "$@"
@@ -61,7 +61,7 @@ handle_arg() {
   shift 1
   cmd_args=("${@}")
 
-  repo_path="${KDN_TALOS_DIR}/${filename}"
+  repo_path="${PRJ_ROOT}/${filename}"
   pass_path="k8s/${cluster_name}/talos/${filename}"
   gpg_path="${PASSWORD_STORE_DIR:-"$HOME/.password-store"}/${pass_path}.gpg"
 
@@ -75,7 +75,7 @@ if test $# -lt 2; then
 
   filename="$(realpath -s "${BASH_SOURCE[0]}")"
   filename="${filename%.*.sh}"
-  filename="${filename#"${KDN_TALOS_DIR}"}"
+  filename="${filename#"${PRJ_ROOT}"}"
   main_args=("${filename}")
 else
   cmd="$1"

@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 set -eEuo pipefail
 test -z "${DEBUG:-}" || set -x
-test -n "${KDN_TALOS_DIR:-}" || eval "$(cd "${BASH_SOURCE[0]%/*}" && direnv export bash)"
+test -n "${PRJ_ROOT:-}" || eval "$(cd "${BASH_SOURCE[0]%/*}" && direnv export bash)"
 
 cmd="$(talos-file "$(go env --json | jq -r '"talosctl-\(.GOOS)-\(.GOARCH)"')" +x)"
 __talosctl_args=(
@@ -9,4 +9,4 @@ __talosctl_args=(
 )
 
 test -n "${DEBUG:-}" || test "${INFO:-"1"}" == 0 || echo "[TALOSCTL]" "${cmd}" "${__talosctl_args[@]}" "$@" >&2
-HOME="${TALOS_HOME}" "${cmd}" "${__talosctl_args[@]}" "$@"
+"${cmd}" "${__talosctl_args[@]}" "$@"

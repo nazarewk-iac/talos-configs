@@ -34,7 +34,6 @@
 ### START divnix/std
 ###
 !*.md
-!/.envrc
 !/flake.nix
 !/flake.lock
 
