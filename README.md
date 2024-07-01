@@ -15,6 +15,7 @@ Runs on 3x Raspberry Pi 4 4GB, each holding:
 ## Scope
 
 - [x] `direnv` activation with Talos configuration generation and management scripts
+    - [ ] replace "just" `direnv` with Nix-based development environment
 - [x] set up Talos on multi-disk Raspberry Pi 4:
     - [x] [RPi4 UEFI-boot](https://github.com/pftf/RPi4) SD card having ONLY boot configuration (see Boot sequence
       issues)
