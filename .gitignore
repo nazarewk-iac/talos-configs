@@ -20,7 +20,7 @@
 
 !/bin/talos*
 !/config.json
-!/patches/**/*.yaml
+!/src/**/*.yaml
 !/image-schematics/*.yaml
 
 # shareable Jetbrains files
@@ -36,6 +36,7 @@
 !*.md
 !/flake.nix
 !/flake.lock
+!/.envrc
 
 # Nix related
 !/cells/**/*.nix

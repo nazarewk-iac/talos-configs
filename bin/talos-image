@@ -21,7 +21,7 @@ install)
   ;;
 sync)
   output="${3:-"all"}"
-  cat <<EOF >"${PRJ_ROOT}/patches/${output}.yaml.d/talos-image.yaml"
+  cat <<EOF >"${PRJ_ROOT}/src/${output}.yaml.d/talos-image.yaml"
 # Talos machine configuration patch
 machine:
   install:

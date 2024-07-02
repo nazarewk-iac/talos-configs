@@ -20,5 +20,5 @@ while [[ $# -gt 0 ]]; do
 done
 
 for node in "${nodes[@]}"; do
-  . talosctl-node "$node" apply-config --file="cache/node-${node}.yaml" "${args[@]}"
+  . talosctl-node "$node" apply-config --file="${PRJ_CACHE_HOME}/talos/node-${node}.yaml" "${args[@]}"
 done

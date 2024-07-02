@@ -18,5 +18,6 @@
     diffutils
     curl
     netcat
+    yq-go
   ];
 }

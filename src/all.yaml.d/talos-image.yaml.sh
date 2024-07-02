@@ -2,6 +2,11 @@
 set -eEuo pipefail
 test -z "${DEBUG:-}" || set -x
 test -n "${PRJ_ROOT:-}" || eval "$(cd "${BASH_SOURCE[0]%/*}" && direnv export bash)"
-addr="$(talos-cfg -r ".nodes.${1}.lan.ip")"
-addr="${1}"
-talosctl --nodes "${addr}" "${@:2}"
+cd "${BASH_SOURCE[0]%/*}"
+
+cat <<EOF
+# Talos machine configuration patch
+machine:
+  install:
+    image: '$(talos-image upgrade)'
+EOF

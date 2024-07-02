@@ -3,21 +3,32 @@ set -eEuo pipefail
 test -z "${DEBUG:-}" || set -x
 test -n "${PRJ_ROOT:-}" || eval "$(cd "${BASH_SOURCE[0]%/*}" && direnv export bash)"
 # initializes Talos configurations
+script_name="${BASH_SOURCE[0]##*/}"
+
+log() {
+  # shellcheck disable=SC2059
+  printf "${script_name}: ${1}\n" "${@:2}" >&2
+}
 
 gen_config() {
   talosctl gen config "${config_args[@]}" "$@"
 }
 
 gen_node() {
-  local name="$1" type args=("${config_args[@]}")
-  type="$(talos-cfg -r ".nodes.${name}.type")"
+  local name="$1" type args=("${config_args[@]}") node_json
+  export name
+  node_json="$(talos-cfg -cr '.nodes[env.name]')"
+  type="$(jq -r '.type' <<<"${node_json}")"
   mapfile -t -O "${#args[@]}" args < <(
-    find_configs -printf '--config-patch=@%p\n' -- "node-${name}.yaml"
+    talos-configs -- "node-${name}.yaml" | sed 's/^/--config-patch=@/g'
   )
   args+=(--output="${cache}/node-$name.yaml")
   args+=(--output-types="$type")
-  # TODO: how to add multiple?
-  args+=(--additional-sans="$(talos-cfg -r ".nodes.${name}.lan.dns")")
+  args+=(--additional-sans="$(jq -r '
+    [.lan.dns, .lan.ip, env.name, env.vip]
+    | map(select(. != null and length > 0))
+    | sort | join(",")
+  ' <<<"${node_json}")")
 
   talosctl gen config "${args[@]}"
 }
@@ -30,64 +41,110 @@ maybe_redirect() {
   fi
 }
 
+can_connect() {
+  local addr="$1" port="$2"
+  if nc -w 1 -z "${addr}" "${port}" &>/dev/null; then
+    log "${addr}:${port} is listening"
+  else
+    local err=$?
+    log "${addr}:${port} is not listening (code ${err})"
+    return "${err}"
+  fi
+}
+
+is_talos_node_up() {
+  local addr="$1"
+  can_connect "${addr}" 50000
+  if talosctl --endpoints "${addr}" --nodes "${addr}" time >&2; then
+    log "${addr} talos node is up"
+  else
+    local err=$?
+    log "${addr} talos node is down (code ${err})"
+    return "${err}"
+  fi
+}
+
 main() {
   export _talos_init=0
-  talos-pass sync-dir state
-  talos-image sync
+  cd "${PRJ_ROOT}"
+  cache="${PRJ_CACHE_HOME}/talos"
 
-  base="${PRJ_ROOT}"
-  cd "${base}"
-  state="${base}/state"
-  cache="${base}/cache"
-
-  secrets="${state}/secrets.yaml"
+  secrets="$(talos-configs -- secrets.yaml)"
   cluster_domain="$(talos-cfg -r '.cluster.domain')"
 
   endpoints=()
-  mapfile -t controlplane_ips < <(talos-cfg-nodes -r 'select(.type == "controlplane").lan.ip')
-  mapfile -t node_names < <(talos-cfg-nodes -r 'select((.type // "") != "").name')
-  mapfile -t node_addresses < <(talos-cfg-nodes -r 'select((.type // "") != "").lan.dns')
+  controlplanes=()
+  node_names=()
   running_nodes=()
 
-  echo "controlplane IPs:"
-  printf " - %s\n" "${controlplane_ips[@]}"
-  echo "node names:"
-  printf " - %s\n" "${node_names[@]}"
-  echo "node addresses:"
-  printf " - %s\n" "${node_addresses[@]}"
+  while read -r node_json; do
+    log "discovering: ${node_json}"
+    ip="$(jq -r ".lan.ip" <<<"${node_json}")"
+    dns="$(jq -r ".lan.dns" <<<"${node_json}")"
+    name="$(jq -r ".name" <<<"${node_json}")"
+    type="$(jq -r ".type" <<<"${node_json}")"
+    # shellcheck disable=SC2034
+    netbird="$name.nb.kdn.im"
 
-  for ip in "${controlplane_ips[@]}"; do
-    nc -w 2 -z "${ip}" 50000 &>/dev/null || continue
-    talosctl --nodes "${ip}" time &>/dev/null || continue
-    endpoints+=("${ip}")
-  done
+    node_names+=("${name}")
 
-  for addr in "${node_addresses[@]}"; do
-    nc -w 2 -z "${addr}" 50000 &>/dev/null || continue
-    talosctl --nodes "${addr}" time &>/dev/null || continue
-    running_nodes+=("${addr}")
-  done
+    if false; then # just to make it easier to format further entries
+      :
+    # TODO: talos control port doesn't listen on netbird
+    #elif is_talos_node_up "${netbird}"; then
+    #  talos_up="netbird"
+    elif is_talos_node_up "${name}"; then
+      talos_up="name"
+    elif is_talos_node_up "${dns}"; then
+      talos_up="dns"
+    elif is_talos_node_up "${ip}"; then
+      talos_up="ip"
+    else
+      talos_up=""
+    fi
 
-  test "${#endpoints[@]}" -gt 0 || endpoints=("${controlplane_ips[0]}")
+    case "${talos_up}" in
+    netbird | dns | name | ip)
+      running_nodes+=("${!talos_up}")
+      if test "${type}" == "controlplane"; then
+        log "Running controlplane node at ${!talos_up}"
+        controlplanes+=("${!talos_up}")
+        endpoints+=("${!talos_up}")
+      fi
+      ;;
+    "")
+      if test "${type}" == "controlplane"; then
+        log "Fallback controlplane node at ${ip}"
+        endpoints+=("${ip}")
+      fi
+      ;;
+    esac
+  done < <(talos-cfg-nodes -c .)
+  test "${#endpoints[@]}" -gt 0 || endpoints=("${controlplanes[0]}")
 
-  echo "endpoints:"
-  printf " - %s\n" "${endpoints[@]}"
-  echo "running nodes:"
-  printf " - %s\n" "${running_nodes[@]}"
+  log "controlplanes:"
+  log " - %s" "${controlplanes[@]}"
+  log "node names:"
+  log " - %s" "${node_names[@]}"
+  log "endpoints:"
+  log " - %s" "${endpoints[@]}"
+  log "running nodes:"
+  log " - %s" "${running_nodes[@]}"
 
   vip="$(talos-cfg -r '.cluster.vip')"
+  export vip
   kubernetes_endpoint="https://${endpoints[0]}:6443"
   for ip in "${vip}" "${endpoints[@]}"; do
-    if nc -w 1 -z "${ip}" 6443 &>/dev/null; then
+    if can_connect "${ip}" 6443 &>/dev/null; then
       kubernetes_endpoint="https://${ip}:6443"
       break
     fi
   done
-  echo "kubernetes_endpoint: ${kubernetes_endpoint}"
+  log "kubernetes_endpoint: ${kubernetes_endpoint}"
 
   config_args=(
     "$(talos-cfg -r '.cluster.name')" "${kubernetes_endpoint}"
-    --force --output="${state}" --talos-version="v$(talos-cfg -r '.talos.version')"
+    --force --output="${cache}" --talos-version="v$(talos-cfg -r '.talos.version')"
     --with-secrets="${secrets}"
     --dns-domain="${cluster_domain}"
   )
@@ -97,9 +154,8 @@ main() {
     talos-configs -- "all.yaml" | sed 's/^/--config-patch=@/g'
   )
 
-  mkdir -p "${state}"
   test -e "${secrets}" || talosctl gen secrets --output-file="${secrets}"
-  gen_config --output="${TALOS_HOME}/.talos/config" --output-types=talosconfig
+  gen_config --output="${TALOSCONFIG}" --output-types=talosconfig
   # see https://github.com/siderolabs/talos/blob/465b9a4e6ca9367326cb862b501f1146989b07d4/cmd/talosctl/cmd/mgmt/gen/config.go#L173-L174
   talosctl config endpoint "${endpoints[@]}"
   talosctl config node "${running_nodes[@]}"
@@ -108,8 +164,8 @@ main() {
     gen_node "${node}"
   done
 
-  for node in "${node_names[@]}"; do
-    if talosctl-node "${node}" kubeconfig --force; then
+  for node in "${running_nodes[@]}"; do
+    if talosctl --nodes "${node}" kubeconfig --force; then
       break
     fi
   done

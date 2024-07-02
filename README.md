@@ -1,6 +1,31 @@
 # talos-configs
 
-Repository containing my personal Talos Kubernetes configurations:
+Repository containing my personal Talos Kubernetes setup.
+
+# Usage overview
+
+```shell
+nix develop --command fish
+
+# (re-)generate configurations
+talos-init
+
+# first node
+talos-apply --insecure rant
+# boostrap only once
+talosctl-node rant bootstrap
+
+talosctl-node rant kubeconfig --force
+kubectl get node
+kubectl get pod -A
+
+# rest of nodes
+talos-apply --insecure hurl jhal
+kubectl get node
+kubectl get pod -A
+```
+
+# Overview
 
 Runs on 3x Raspberry Pi 4 4GB, each holding:
 
@@ -8,7 +33,8 @@ Runs on 3x Raspberry Pi 4 4GB, each holding:
 - (any) SD card holding [RPi4 UEFI-boot](https://github.com/pftf/RPi4) and nothing else
 - 1x small ~256 GB SSDs holding encrypted Talos system partitions: `STATE` and `EPHEMERAL`
 - 1x 3.5/2.5" [`ORICO-6648US3-C-V1` 4x disk bay](https://www.orico.cc/us/product/detail/3270.html)
-  - sadly this one requires physically pressing a button to turn it on after plugging into power socket
+  - sadly this one requires physically pressing a button to turn it on after plugging into power socket,
+    [`ORICO-6558US3-C`](https://www.orico.cc/us/product/detail/3562.html) has the same problem.
   - 1x 1TB SSDs for local/persistent storage drive (so Talos system disks can be safely wiped)
   - 2-3x of SSD/HDD drives to join into Ceph cluster
 
@@ -33,7 +59,7 @@ Runs on 3x Raspberry Pi 4 4GB, each holding:
   - [ ] pin Kubernetes version to upgrade separately from Talos
 - [ ] set up ZFS on LUKS on the 1TB drive for local storage
 - [x] access from anywhere with Netbird
-- [ ] replace disk bay with [`ORICO-6558US3-C`](https://www.orico.cc/us/product/detail/3562.html)
+- [ ] resolve `*.pic.kdn.im` DNS names
 - [ ] set up Rook/Ceph
 - [ ] separate Ceph configurations for:
   - [ ] SSDs: replicated frequent/lower latency access
@@ -41,29 +67,6 @@ Runs on 3x Raspberry Pi 4 4GB, each holding:
   - [ ] HDDs: long term backups
 - [ ] run Nextcloud?
 - [ ] offline-synced backup solution?
-
-# Usage overview
-
-```shell
-direnv allow
-
-# (re-)generate configurations
-talos-init
-
-# first node
-talos-apply --insecure rant
-# boostrap only once
-talosctl-node rant bootstrap
-
-talosctl-node rant kubeconfig --force
-kubectl get node
-kubectl get pod -A
-
-# rest of nodes
-talos-apply --insecure hurl jhal
-kubectl get node
-kubectl get pod -A
-```
 
 # First time setup
 
@@ -81,44 +84,52 @@ and `sudo nix run 'nixpkgs#rpi-imager'`.
 1. load SD card with #rpi4-uefi (can be done through #rpi-imager)
 2. load USB drive/disk with `metal-rpi_generic-arm64.raw.xz` #talos release using #rpi-imager or `dd`
 3. load and boot another SD card with `SD > USB boot EEPROM` using #rpi-imager
-   1. boot it to configure for SD card boot
-4. enter UEFI setup:
-   1. (optionally?) disconnect all of USB drives
-   2. boot #rpi4-uefi SD card (it should stay as the primary boot option forever)
-      - TODO: possibly copy-over the `config.txt` from Talos partition?
-   3. wait for rasbperry logo on black background
-      - press `ESC` immediately (before the loader expires)
-   4. you are now at UEFI setup (looks like a BIOS setup)
-   5. (optionally?) connect all USB drives
-   6. make sure the boot USB drive is connected
-5. set up #rpi4-uefi (go back with `F10` > `Y` > `ESC` to save settings whenever possible)
-   - `Device Manager`
-     - `Rasbperry Pi Configuration`
-       - `Display Configuration`
-         - enable `Virtual 720p` and nothing else
-           - this is the most legible option on Gembird UHG-4K2-01 HDMI
-             grabber https://gembird.com/item.aspx?id=12083
-       - `Advanced Configuration`
-         - disable `Limit RAM to 3 GB`
-   - `Boot Maintenance Manager`
-     - `Boot Discovery Policy`
-       - set to `Minimal`
-     - (optionally) change `Auto Boot Time-out` from `5` to `1` for faster boot
-     - `Boot Options`
-       - `Change Boot Order`
-         - make sure the correct disk is first (it's the same as #talos
-           config `machine.install.diskSelector.wwid` in
-           case of `SK Hynix` drives over NVMe to USB adapters)
-         - optionally delete all the other boot options
-   - `Reset`
+4. boot it to configure for SD card boot
+5. enter UEFI setup:
+6. (optionally?) disconnect all of USB drives
+7. boot #rpi4-uefi SD card (it should stay as the primary boot option forever)
+
+   - TODO: possibly copy-over the `config.txt` from Talos partition?
+
+8. wait for rasbperry logo on black background
+
+   - press `ESC` immediately (before the loader expires)
+
+9. you are now at UEFI setup (looks like a BIOS setup)
+10. (optionally?) connect all USB drives
+11. make sure the boot USB drive is connected
+12. set up #rpi4-uefi (go back with `F10` > `Y` > `ESC` to save settings whenever possible)
+
+- `Device Manager`
+  - `Rasbperry Pi Configuration`
+    - `Display Configuration`
+      - enable `Virtual 720p` and nothing else
+        - this is the most legible option on Gembird UHG-4K2-01 HDMI
+          grabber https://gembird.com/item.aspx?id=12083
+    - `Advanced Configuration`
+      - disable `Limit RAM to 3 GB`
+- `Boot Maintenance Manager`
+  - `Boot Discovery Policy`
+    - set to `Minimal`
+  - (optionally) change `Auto Boot Time-out` from `5` to `1` for faster boot
+  - `Boot Options`
+    - `Change Boot Order`
+      - make sure the correct disk is first (it's the same as #talos
+        config `machine.install.diskSelector.wwid` in
+        case of `SK Hynix` drives over NVMe to USB adapters)
+      - optionally delete all the other boot options
+- `Reset`
+
 6. Reboot the RPi4 into Talos
-   - wait for everything to boot (no pool.ntp.org errors after ~2-3 minutes)
-   - figure out:
-     - ip address
-       - try `nc -z <ip> 50000`
-     - mac address
-   - set up DNS name on `drek` (router)
-   - add entry to `config.json`
+
+- wait for everything to boot (no pool.ntp.org errors after ~2-3 minutes)
+- figure out:
+  - ip address
+    - try `nc -w 2 -z <ip> 50000`
+  - mac address
+- set up DNS name on `drek` (router)
+- add entry to `config.json`
+
 7. it should be possible to run `talos-apply` on the controlplane node
 
 ### Rasbperry Pi 4 boot sequence issues

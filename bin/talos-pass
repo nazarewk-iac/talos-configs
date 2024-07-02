@@ -56,6 +56,14 @@ cmd_sync_dir() {
   done
 }
 
+cmd_path() {
+  echo -n "${pass_path}"
+}
+
+cmd_gpgpath() {
+  echo -n "${gpg_path}"
+}
+
 handle_arg() {
   local cmd="$1" filename="$2"
   shift 1

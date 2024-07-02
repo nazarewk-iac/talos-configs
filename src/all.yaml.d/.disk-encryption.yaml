@@ -6,7 +6,7 @@ machine:
         - nodeID: {}
           slot: 0
         - static:
-            passphrase: null # fill in at state/all.yaml.d/disk-encryption.yaml
+            passphrase: null # filled in by the script
           slot: 1
     state:
       provider: luks2
@@ -14,5 +14,5 @@ machine:
         - nodeID: {}
           slot: 0
         - static:
-            passphrase: null # fill in at state/all.yaml.d/disk-encryption.yaml
+            passphrase: null # filled in by the script
           slot: 1

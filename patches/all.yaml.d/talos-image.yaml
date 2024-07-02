@@ -1,4 +1,0 @@
-# Talos machine configuration patch
-machine:
-  install:
-    image: "factory.talos.dev/installer/5f3a110f425b98d9763f3a5be1b912aaab68c2c851799ed1917184269b90b0bf:v1.7.5"

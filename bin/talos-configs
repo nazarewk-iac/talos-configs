@@ -2,19 +2,36 @@
 set -eEuo pipefail
 test -z "${DEBUG:-}" || set -x
 test -n "${PRJ_ROOT:-}" || eval "$(cd "${BASH_SOURCE[0]%/*}" && direnv export bash)"
+script_name="${BASH_SOURCE[0]##*/}"
+
+log() {
+  # shellcheck disable=SC2059
+  printf "${script_name}: ${1}\n" "${@:2}" >&2
+}
 
 handle_file() {
   local filename="$1"
-  echo "$filename"
+  local relpath="${filename#"${PRJ_ROOT}/"}"
+  local cachepath="${PRJ_CACHE_HOME}/talos/configs/${relpath}"
+  mkdir -p "${cachepath%/*}"
+
+  if test -x "${filename}"; then
+    log "found executable: %s" "${filename}"
+    "${filename}" >"${cachepath}"
+  else
+    log "found file: %s" "${filename}"
+    cp "${filename}" "${cachepath}"
+  fi
+  log "writing to: %s" "${cachepath}"
+  echo "${cachepath}"
 }
 
 find_configs() {
-  find_files "${PRJ_ROOT}/patches" yaml "$@"
-  find_files "${PRJ_ROOT}/state" yaml "$@"
+  find_files "${PRJ_ROOT}/src" yaml "$@"
 }
 
 find_files() {
-  local base_dir="$1" extension="$2" filenames=() args=() search_names=()
+  local base_dir="$1" extension="$2" filenames=() args=()
   shift 2
 
   for arg in "$@"; do
@@ -25,24 +42,31 @@ find_files() {
       filenames+=("$arg")
     fi
   done
+  local base_find_args=(
+    "${base_dir}"
+    -maxdepth 2
+    ! -type d
+    ! -name '.*'
+    "${args[@]}"
+  )
 
   for filename in "${filenames[@]}"; do
-    search_names=()
-    for file in "${base_dir}/${filename}" "${base_dir}/${filename}.d"; do
-      test -e "${file}" || continue
-      search_names+=("${file}")
-    done
-    test "${#search_names[@]}" -eq 0 || find "${search_names[@]}" \
-      -maxdepth 1 \
-      -not '(' -type d ')' \
-      -name "*.${extension}" \
-      "${args[@]}"
+    local abs="${base_dir}/${filename}"
+    local find_args=(
+      "${base_find_args[@]}"
+      \(
+      '(' ! -executable \( -path "${abs}" -o -path "${abs}.d/*.${extension}" \) ')'
+      -o
+      '(' -executable \( -path "${abs}.*" -o -path "${abs}.d/*.${extension}.*" \) ')'
+      \)
+    )
+    find "${find_args[@]}" -print0
   done
 }
 
 main() {
-  find_configs "$@" -print0 | while IFS= read -r -d '' filename; do
-    handle_file "$filename"
+  find_configs "$@" | while IFS= read -r -d '' filename; do
+    handle_file "${filename}"
   done
 }
 
