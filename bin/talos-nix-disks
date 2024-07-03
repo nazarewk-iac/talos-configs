@@ -4,4 +4,16 @@ test -z "${DEBUG:-}" || set -x
 test -n "${PRJ_ROOT:-}" || eval "$(cd "${BASH_SOURCE[0]%/*}" && direnv export bash)"
 
 node="$1"
-kubectl -n nix-system exec -it -c nix "$(kubectl -n nix-system get pod -o name -l name=nix-disks --field-selector spec.nodeName="${node}")" -- nix develop /root/src
+kubectl_exec_args=()
+nix_develop_args=()
+cmd=("${@:2}")
+if test "${#cmd[@]}" == 0; then
+  cmd=(bash)
+  kubectl_exec_args+=(-it)
+else
+  nix_develop_args+=(--quiet)
+fi
+cmd=(nix develop "${nix_develop_args[@]}" /root/src --command "${cmd[@]}")
+
+pod="$(kubectl -n nix-system get pod -o name -l name=nix-disks --field-selector spec.nodeName="${node}")"
+kubectl -n nix-system exec "${kubectl_exec_args[@]}" -c nix "${pod}" -- "${cmd[@]}"

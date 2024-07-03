@@ -59,7 +59,7 @@ spec:
                 --verbose
               )
               cp -rTL /src/..data ./src
-              ls -la ./src
+              ln -sfT /hostfs/dev/disk /dev/disk
               nix develop "${nix_args[@]}" /root/src --command echo 'Hello World!'
               exec sleep infinity
           workingDir: /root

@@ -30,6 +30,8 @@
             cryptsetup
             zfs_unstable
             disko
+            util-linux
+            jq
           ];
         };
       };
