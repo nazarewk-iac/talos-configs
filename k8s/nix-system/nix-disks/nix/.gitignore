@@ -13,6 +13,6 @@
 ### END ignore everything
 ###
 
-!*.yaml
-!/*.env
-!/*.conf
+!/flake.lock
+!/.envrc
+!*.nix

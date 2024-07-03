@@ -39,7 +39,7 @@ spec:
                 done
                 nix run --show-trace --print-build-logs --verbose 'nixpkgs#jq' -- -nS env
                 set +x
-                while true; do sleep $((RANDOM % 10)); done
+                exec sleep infinity
               }
               main "$@" >&2
           resources:

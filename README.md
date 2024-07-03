@@ -158,13 +158,25 @@ Updating/upgrading/debugging.
 - `talosctl-node rant health`
 - `talosctl etcd members`
 
-## disks identification
+## Disk management
+
+### non-Talos disk management
+
+```shell
+kubectl apply -k k8s/nix-system
+node=rant
+talos-nix-disks "${node}"
+# or
+kubectl -n nix-system exec -it -c nix "$(kubectl -n nix-system get pod -o name -l name=nix-disks --field-selector spec.nodeName="${node}")" -- nix develop /root/src
+```
+
+### Talos disk identification
 
 In `talos disks` (actual inputs for cluster configs) USB adapters identify as the same device without meaningful difference between those.
 
 After (probably) `udev` service is up you can list all disks and symlinks by `talosctl list /dev/disk/by-id --long`.
 
-### USB3.0 to powered SATA adapter
+#### USB3.0 to powered SATA adapter
 
 Best identified with `wwid`: `*DD56419883014*`
 
@@ -175,7 +187,7 @@ hurl.lan.   /dev/sdb       USB3.0        -            HDD    -      t10.ANKEJE  
 jhal.lan.   /dev/sdb       USB3.0        -            HDD    -      t10.ANKEJE  USB3.0          DD56419883014\0\0\0   scsi:t-0x00   -       1.0 TB   /system/container/ACPI0004:02/PNP0D10:00/usb3/3-1/3-1.3/3-1.3:1.0/host1/target1:0:0/1:0:0:0/   /sys/class/block
 ```
 
-### USB3.0 to M.2 SSD adapter
+#### USB3.0 to M.2 SSD adapter
 
 Best identified with `wwid`: `*DD564198838A3*`:
 
@@ -186,7 +198,7 @@ hurl.lan.   /dev/sda       Super Speed   -            HDD    -      t10.USB3.0  
 jhal.lan.   /dev/sda       Super Speed   -            HDD    -      t10.USB3.0  Super Speed     DD564198838A3\0\0\0   scsi:t-0x00   -       256 GB   /system/container/ACPI0004:02/PNP0D10:00/usb3/3-2/3-2:1.0/host0/target0:0:0/0:0:0:0/           /sys/class/block               *
 ```
 
-### All connected disks
+#### All connected disks
 
 <details>
   <summary><code>talosctl disks</code></summary>

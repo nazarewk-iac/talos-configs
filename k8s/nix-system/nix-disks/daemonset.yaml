@@ -57,17 +57,12 @@ spec:
                 --show-trace
                 --print-build-logs
                 --verbose
-                --impure # see https://discourse.nixos.org/t/nix-profile-install-errors-wants-impure/39793
               )
-              pkgs=(
-                cryptsetup
-                zfs_unstable
-                disko
-              )
-              mapfile -t pkgs_args < <(printf "nixpkgs#%s\n" "${pkgs[@]}")
-              nix profile install "${nix_args[@]}" "${pkgs_args[@]}"
-              set +x
-              while true; do sleep $((RANDOM % 10)); done
+              cp -rTL /src/..data ./src
+              ls -la ./src
+              nix develop "${nix_args[@]}" /root/src --command echo 'Hello World!'
+              exec sleep infinity
+          workingDir: /root
           securityContext:
             privileged: true
           resources:
@@ -82,12 +77,21 @@ spec:
             - secretRef:
                 name: nix-client-env
           volumeMounts:
+            - name: src
+              mountPath: /src
             - name: etc-nix
               mountPath: /etc/nix
             - name: host-nix-store
               mountPath: /nix/store
             - name: host-nix-socket
               mountPath: /nix/var/nix/daemon-socket/socket
+            - name: hostfs
+              mountPropagation: HostToContainer
+              mountPath: /hostfs
+            #- name: hostfs
+            #  subPath: dev/
+            #  mountPropagation: HostToContainer
+            #  mountPath: /dev
           livenessProbe:
             periodSeconds: 3
             exec:
@@ -97,6 +101,9 @@ spec:
                 - /nix/var/nix/daemon-socket/socket
 
       volumes:
+        - name: src
+          configMap:
+            name: nix-disks-src
         - name: etc-nix
           projected:
             sources:
@@ -107,6 +114,9 @@ spec:
         - name: host-nix-store
           hostPath:
             path: /var/lib/nix/store
+        - name: hostfs
+          hostPath:
+            path: /
         - name: host-nix-socket
           hostPath:
             type: Socket

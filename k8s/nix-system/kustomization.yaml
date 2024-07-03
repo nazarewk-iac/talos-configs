@@ -4,7 +4,7 @@ resources:
   - namespace.yaml
   - nix-client.ds.yaml
   - nix-daemon.ds.yaml
-  - nix-disks.ds.yaml
+  - nix-disks/
 
 images:
   - name: docker.io/nixos/nix

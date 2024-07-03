@@ -1,0 +1,7 @@
+#!/usr/bin/env bash
+set -eEuo pipefail
+test -z "${DEBUG:-}" || set -x
+test -n "${PRJ_ROOT:-}" || eval "$(cd "${BASH_SOURCE[0]%/*}" && direnv export bash)"
+
+node="$1"
+kubectl -n nix-system exec -it -c nix "$(kubectl -n nix-system get pod -o name -l name=nix-disks --field-selector spec.nodeName="${node}")" -- nix develop /root/src

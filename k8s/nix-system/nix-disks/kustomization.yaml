@@ -1,0 +1,12 @@
+namespace: nix-system
+
+resources:
+  - daemonset.yaml
+
+configMapGenerator:
+  - name: nix-disks-src
+    files:
+      - nix/.envrc
+      - nix/.gitignore
+      - nix/flake.lock
+      - nix/flake.nix

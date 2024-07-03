@@ -27,6 +27,9 @@ spec:
         - name: nix-init
           image: docker.io/nixos/nix
           command: ["/usr/bin/env", "bash"]
+          # TODO: persist gcroots and mount them into subdirectories per container? https://matrix.to/#/!RRerllqmbATpmbJgCn:nixos.org/$V0cbV0y8SdQ0SmZlopx4KrOvH2xH06febYwtY_QKND4?via=nixos.org&via=matrix.org&via=tchncs.de
+          # TODO: look into less interference between Docker image's config and host
+          # TODO: investigate whether sharing profiles makes sense? https://matrix.to/#/!RRerllqmbATpmbJgCn:nixos.org/$PLtTN_80xU6azGAh66O961wRW48T-F8BK-KajasIPWs?via=nixos.org&via=matrix.org&via=tchncs.de
           args:
             - '-c'
             - |-
