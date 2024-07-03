@@ -33,8 +33,7 @@ Runs on 3x Raspberry Pi 4 4GB, each holding:
 - (any) SD card holding [RPi4 UEFI-boot](https://github.com/pftf/RPi4) and nothing else
 - 1x small ~256 GB SSDs holding encrypted Talos system partitions: `STATE` and `EPHEMERAL`
 - 1x 3.5/2.5" [`ORICO-6648US3-C-V1` 4x disk bay](https://www.orico.cc/us/product/detail/3270.html)
-  - sadly this one requires physically pressing a button to turn it on after plugging into power socket,
-    [`ORICO-6558US3-C`](https://www.orico.cc/us/product/detail/3562.html) has the same problem.
+  - TODO: replace this, see known issues why
   - 1x [Crucial BX500 1TB](https://www.crucial.com/ssd/bx500/ct1000bx500ssd1) for local/persistent storage drive (so Talos system disks can be safely wiped)
   - 2-3x of various spare SSD/HDD drives to join into Ceph cluster
 
@@ -253,3 +252,21 @@ talos-upgrade hurl
 might need to run `talos-apply hurl` after reboot to load the ZFS kernel module before the boot finishes
 
 debug system messages with `talosctl-node hurl dmesg --follow`
+
+# Discovered issues
+
+- most cheap SATA -> USB disk bays require physically pressing a button to turn on after losing power, so far:
+
+  - `ORICO-6648US3-C-V1`
+  - `ORICO-6558US3-C`
+  - `StarTech SDOCK4U313`
+  - `Fantec QB-35US3R`
+
+- `ORICO-6648US3-C-V1` seems to garble drive's metadata:
+  - all 3 [Crucial BX500 1TB](https://www.crucial.com/ssd/bx500/ct1000bx500ssd1) plugged into different RPi4
+    appear EXACTLY the same in `lsblk -OJ`
+
+## improvement ideas
+
+- replace rpi4 with NAS kit like https://wiki.friendlyelec.com/wiki/index.php/CM3588
+- look for HBA expansion cards?
