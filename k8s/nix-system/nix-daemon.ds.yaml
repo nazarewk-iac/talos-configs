@@ -31,6 +31,11 @@ spec:
             - '-c'
             - |-
               set -xeEuo pipefail
+              # contains leftovers from the original container
+              for dir in /host/nix/var/nix/{gcroots,profiles,temproots} ; do
+                test -e "${dir}" || continue
+                rm -r "${dir}"
+              done
               cp -aT --update=older /nix /host/nix
           resources:
             limits:
@@ -41,11 +46,8 @@ spec:
           volumeMounts:
             - name: host-nix
               mountPath: /host/nix
-
       containers:
         - name: nix-daemon
-          image: docker.io/nixos/nix
-          command: ["/usr/bin/env", "bash"]
           args:
             - '-c'
             - |-
@@ -57,6 +59,8 @@ spec:
             requests:
               cpu: 500m
               memory: 128Mi
+          image: docker.io/nixos/nix
+          command: ["/usr/bin/env", "bash"]
           envFrom:
             - configMapRef:
                 name: nix-daemon-env
@@ -67,15 +71,49 @@ spec:
           volumeMounts:
             - name: etc-nix
               mountPath: /etc/nix
-            - name: host-fs
-              mountPropagation: HostToContainer
-              mountPath: /hostfs
-            - name: host-dev
-              mountPropagation: HostToContainer
-              mountPath: /dev
             - name: host-nix
               mountPropagation: HostToContainer
               mountPath: /nix
+        - &client
+          name: nix-store-repair
+          image: docker.io/nixos/nix
+          command: ["/usr/bin/env", "bash"]
+          args:
+            - '-c'
+            - |-
+              set -xeEuo pipefail
+              while nix-store --repair --verify --check-contents ; do
+                sleep $(( 3 * 60 * 60 + RANDOM % (15 * 60) ))
+              done
+          resources:
+            limits:
+              memory: 512Mi
+              cpu: 200m
+          envFrom:
+            - configMapRef:
+                name: nix-client-env
+            - secretRef:
+                name: nix-client-env
+          volumeMounts:
+            - name: etc-nix
+              mountPath: /etc/nix
+            - name: host-nix
+              subPath: store/
+              mountPath: /nix/store
+              readOnly: true
+            - name: host-nix
+              subPath: var/nix/daemon-socket/
+              mountPath: /nix/var/nix/daemon-socket
+        #- <<: *client
+        #  name: nix-auto-gc
+        #  args:
+        #    - '-c'
+        #    - |-
+        #      set -xeEuo pipefail
+        #      while nix-collect-garbage --delete-older-than 90d ; do
+        #        sleep $(( 12 * 60 * 60 + RANDOM % (30 * 60) ))
+        #      done
+
 
       terminationGracePeriodSeconds: 30
       volumes:
@@ -86,12 +124,6 @@ spec:
                   name: nix-files
               - secret:
                   name: nix-files
-        - name: host-fs
-          hostPath:
-            path: /
-        - name: host-dev
-          hostPath:
-            path: /dev
         - name: host-nix
           hostPath:
             path: /var/lib/nix

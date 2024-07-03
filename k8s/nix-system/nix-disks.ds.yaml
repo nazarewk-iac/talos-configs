@@ -1,18 +1,18 @@
 apiVersion: apps/v1
 kind: DaemonSet
 metadata:
-  name: nix-client
+  name: nix-disks
   namespace: nix-system
   labels:
-    k8s-app: nix-client
+    k8s-app: nix-disks
 spec:
   selector:
     matchLabels:
-      name: nix-client
+      name: nix-disks
   template:
     metadata:
       labels:
-        name: nix-client
+        name: nix-disks
     spec:
 
       terminationGracePeriodSeconds: 5
@@ -25,6 +25,26 @@ spec:
         - key: node-role.kubernetes.io/master
           operator: Exists
           effect: NoSchedule
+      initContainers:
+        - name: wait-nix-daemon
+          image: docker.io/nixos/nix
+          command: ["/usr/bin/env", "bash"]
+          args:
+            - '-c'
+            - |-
+              set -xeEuo pipefail
+              until test -S /nix/var/nix/daemon-socket/socket ; do
+                sleep $((RANDOM % 3))
+              done
+          volumeMounts:
+            - name: host-nix-socket
+              mountPath: /nix/var/nix/daemon-socket/socket
+          resources:
+            limits:
+              memory: 16Mi
+            requests:
+              cpu: 10m
+              memory: 16Mi
       containers:
         - name: nix
           image: docker.io/nixos/nix
@@ -33,15 +53,23 @@ spec:
             - '-c'
             - |-
               set -xeEuo pipefail
-              main () {
-                until test -S /nix/var/nix/daemon-socket/socket ; do
-                  sleep $((RANDOM % 3))
-                done
-                nix run --show-trace --print-build-logs --verbose 'nixpkgs#jq' -- -nS env
-                set +x
-                while true; do sleep $((RANDOM % 10)); done
-              }
-              main "$@" >&2
+              nix_args=(
+                --show-trace
+                --print-build-logs
+                --verbose
+                --impure # see https://discourse.nixos.org/t/nix-profile-install-errors-wants-impure/39793
+              )
+              pkgs=(
+                cryptsetup
+                zfs_unstable
+                disko
+              )
+              mapfile -t pkgs_args < <(printf "nixpkgs#%s\n" "${pkgs[@]}")
+              nix profile install "${nix_args[@]}" "${pkgs_args[@]}"
+              set +x
+              while true; do sleep $((RANDOM % 10)); done
+          securityContext:
+            privileged: true
           resources:
             limits:
               memory: 2Gi
@@ -60,6 +88,13 @@ spec:
               mountPath: /nix/store
             - name: host-nix-socket
               mountPath: /nix/var/nix/daemon-socket/socket
+          livenessProbe:
+            periodSeconds: 3
+            exec:
+              command:
+                - test
+                - -S
+                - /nix/var/nix/daemon-socket/socket
 
       volumes:
         - name: etc-nix

@@ -4,10 +4,11 @@ resources:
   - namespace.yaml
   - nix-client.ds.yaml
   - nix-daemon.ds.yaml
+  - nix-disks.ds.yaml
 
 images:
   - name: docker.io/nixos/nix
-    newTag: 2.21.1
+    newTag: 2.23.1
 
 configMapGenerator:
   - name: nix-files
@@ -22,7 +23,7 @@ configMapGenerator:
 
 secretGenerator:
   - name: nix-files
-    files:
-      - nix.sensitive.conf
+#    files:
+#      - nix.sensitive.conf
   - name: nix-client-env
   - name: nix-daemon-env

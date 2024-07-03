@@ -8,15 +8,21 @@ args=()
 
 while [[ $# -gt 0 ]]; do
   case "$1" in
-  --*)
+  --check)
+    mapfile -t -O "${#nodes[@]}" nodes < <(talos-cfg -r '.nodes|keys[]')
+    args+=('--dry-run')
+    ;;
+  -*)
     args+=("$1")
-    shift
+    ;;
+  '*')
+    mapfile -t -O "${#nodes[@]}" nodes < <(talos-cfg -r '.nodes|keys[]')
     ;;
   *)
     nodes+=("$1")
-    shift
     ;;
   esac
+  shift
 done
 
 for node in "${nodes[@]}"; do

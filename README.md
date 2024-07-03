@@ -35,8 +35,8 @@ Runs on 3x Raspberry Pi 4 4GB, each holding:
 - 1x 3.5/2.5" [`ORICO-6648US3-C-V1` 4x disk bay](https://www.orico.cc/us/product/detail/3270.html)
   - sadly this one requires physically pressing a button to turn it on after plugging into power socket,
     [`ORICO-6558US3-C`](https://www.orico.cc/us/product/detail/3562.html) has the same problem.
-  - 1x 1TB SSDs for local/persistent storage drive (so Talos system disks can be safely wiped)
-  - 2-3x of SSD/HDD drives to join into Ceph cluster
+  - 1x [Crucial BX500 1TB](https://www.crucial.com/ssd/bx500/ct1000bx500ssd1) for local/persistent storage drive (so Talos system disks can be safely wiped)
+  - 2-3x of various spare SSD/HDD drives to join into Ceph cluster
 
 ## Scope
 
@@ -59,6 +59,7 @@ Runs on 3x Raspberry Pi 4 4GB, each holding:
   - [ ] pin Kubernetes version to upgrade separately from Talos
 - [ ] set up ZFS on LUKS on the 1TB drive for local storage
 - [x] access from anywhere with Netbird
+- [ ] run arbitrary Nix tooling within the cluster
 - [ ] resolve `*.pic.kdn.im` DNS names
 - [ ] set up Rook/Ceph
 - [ ] separate Ceph configurations for:
@@ -89,11 +90,11 @@ and `sudo nix run 'nixpkgs#rpi-imager'`.
 6. (optionally?) disconnect all of USB drives
 7. boot #rpi4-uefi SD card (it should stay as the primary boot option forever)
 
-   - TODO: possibly copy-over the `config.txt` from Talos partition?
+- TODO: possibly copy-over the `config.txt` from Talos partition?
 
 8. wait for rasbperry logo on black background
 
-   - press `ESC` immediately (before the loader expires)
+- press `ESC` immediately (before the loader expires)
 
 9. you are now at UEFI setup (looks like a BIOS setup)
 10. (optionally?) connect all USB drives
@@ -159,7 +160,9 @@ Updating/upgrading/debugging.
 
 ## disks identification
 
-USB adapters identify as the same device without meaningful difference between those:
+In `talos disks` (actual inputs for cluster configs) USB adapters identify as the same device without meaningful difference between those.
+
+After (probably) `udev` service is up you can list all disks and symlinks by `talosctl list /dev/disk/by-id --long`.
 
 ### USB3.0 to powered SATA adapter
 
@@ -214,7 +217,15 @@ hurl.lan.   /dev/sde       P210 2048GB       -            HDD    -      -       
 ## updating machine config
 
 ```shell
+talos-apply --dry-run hurl
 talos-apply hurl
+```
+
+## checking machine config drift
+
+```shell
+talos-apply --dry-run '*'
+talos-apply --check
 ```
 
 ## upgrading install image (extensions etc.)
