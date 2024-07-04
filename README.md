@@ -167,10 +167,7 @@ Updating/upgrading/debugging.
 
 ```shell
 kubectl apply -k k8s/nix-system
-node=rant
-talos-nix-disks "${node}"
-# or
-kubectl -n nix-system exec -it -c nix "$(kubectl -n nix-system get pod -o name -l name=nix-disks --field-selector spec.nodeName="${node}")" -- nix develop /root/src
+talos-nix-disks rant
 ```
 
 ### Talos disk identification
