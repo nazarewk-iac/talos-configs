@@ -8,5 +8,9 @@ configMapGenerator:
     files:
       - nix/.envrc
       - nix/.gitignore
+      - nix/local-storage.disko.lib.nix
+      - nix/container-entrypoint.sh
+      - nix/disks.nix
       - nix/flake.lock
       - nix/flake.nix
+      - nix/handle-drives.sh

@@ -2,7 +2,6 @@ namespace: nix-system
 
 resources:
   - namespace.yaml
-  - nix-client.ds.yaml
   - nix-daemon.ds.yaml
   - nix-disks/
 

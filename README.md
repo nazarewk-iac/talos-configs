@@ -56,11 +56,13 @@ Runs on 3x Raspberry Pi 4 4GB, each holding:
   - [x] use Image Factory to customize Talos images using `talos-image`
   - [x] add ZFS system extension
   - [ ] pin Kubernetes version to upgrade separately from Talos
-- [ ] set up ZFS on LUKS on the 1TB drive for local storage
-  - TODO: all 3 drives are symlinked at `/dev/disk/by-id/usb-CT1000BX_500SSD1_152D00539000-0:0` and have ZERO meaningful difference in `lsblk -OJ`
+- [x] set up ZFS on LUKS on the 1TB drive for local storage
+  - [ ] make those accessible with [OpenEBS local storage](https://openebs.io/docs/concepts/data-engines/localstorage) engine
 - [x] access from anywhere with Netbird
 - [x] run arbitrary Nix tooling within the cluster
   - see `talos-nix-disks` or `nix-system/nix-disks` daemonset configuration
+  - [ ] put container gcroots (maybe profiles?) into subdirectories on host
+  - [ ] write some controller/operator to inject Nix configs into Pod automatically?
 - [ ] resolve `*.pic.kdn.im` DNS names
 - [ ] set up Rook/Ceph
 - [ ] separate Ceph configurations for:

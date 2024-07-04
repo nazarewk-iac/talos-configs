@@ -8,7 +8,7 @@ kubectl_exec_args=()
 nix_develop_args=()
 cmd=("${@:2}")
 if test "${#cmd[@]}" == 0; then
-  cmd=(bash)
+  cmd=(/nix-disks/devshell/entrypoint)
   kubectl_exec_args+=(-it)
 else
   nix_develop_args+=(--quiet)

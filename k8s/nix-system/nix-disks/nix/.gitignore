@@ -16,3 +16,5 @@
 !/flake.lock
 !/.envrc
 !*.nix
+!/handle-drives.sh
+!/container-entrypoint.sh

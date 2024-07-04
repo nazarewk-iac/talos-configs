@@ -6,6 +6,9 @@ metadata:
   labels:
     k8s-app: nix-disks
 spec:
+  updateStrategy:
+    rollingUpdate:
+      maxUnavailable: "100%"
   selector:
     matchLabels:
       name: nix-disks
@@ -14,7 +17,6 @@ spec:
       labels:
         name: nix-disks
     spec:
-
       terminationGracePeriodSeconds: 5
       tolerations:
         # these tolerations are to have the daemonset runnable on control plane nodes
@@ -49,19 +51,7 @@ spec:
         - name: nix
           image: docker.io/nixos/nix
           command: ["/usr/bin/env", "bash"]
-          args:
-            - '-c'
-            - |-
-              set -xeEuo pipefail
-              nix_args=(
-                --show-trace
-                --print-build-logs
-                --verbose
-              )
-              cp -rTL /src/..data ./src
-              ln -sfT /hostfs/dev/disk /dev/disk
-              nix develop "${nix_args[@]}" /root/src --command echo 'Hello World!'
-              exec sleep infinity
+          args: ["/nix-disks/src/container-entrypoint.sh"]
           workingDir: /root
           securityContext:
             privileged: true
@@ -71,14 +61,24 @@ spec:
             requests:
               cpu: 50m
               memory: 32Mi
+          env:
+            - name: K8S_NODE_NAME
+              valueFrom:
+                fieldRef:
+                  fieldPath: spec.nodeName
           envFrom:
             - configMapRef:
                 name: nix-client-env
             - secretRef:
                 name: nix-client-env
           volumeMounts:
+            - name: fhs-run
+              # `cryptsetup` doesn't like missing /run/cryptsetup
+              mountPath: /run
             - name: src
-              mountPath: /src
+              mountPath: /nix-disks/src
+            - name: passphrases
+              mountPath: /nix-disks/passphrases
             - name: etc-nix
               mountPath: /etc/nix
             - name: host-nix-store
@@ -99,11 +99,24 @@ spec:
                 - test
                 - -S
                 - /nix/var/nix/daemon-socket/socket
+          readinessProbe:
+            periodSeconds: 3
+            exec:
+              command:
+                - test
+                - -L
+                - /nix-disks/devshell
 
       volumes:
+        - name: fhs-run
+          emptyDir:
+            medium: "Memory"
         - name: src
           configMap:
             name: nix-disks-src
+        - name: passphrases
+          secret:
+            secretName: nix-disks-passphrases
         - name: etc-nix
           projected:
             sources:
