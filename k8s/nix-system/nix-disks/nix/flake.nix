@@ -52,6 +52,15 @@
             exec "$cmd" "$@"
           '';
         };
+        bin.render = pkgs.writeShellApplication {
+          name = "disks-render";
+          runtimeInputs = with pkgs; [bin.run];
+          text = ''
+            for name in "$@" ; do
+              disks-run "$name" render
+            done
+          '';
+        };
         bin.setup = pkgs.writeShellApplication {
           name = "disks-setup";
           runtimeInputs = with pkgs; [

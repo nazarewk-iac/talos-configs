@@ -57,7 +57,7 @@ Runs on 3x Raspberry Pi 4 4GB, each holding:
   - [x] add ZFS system extension
   - [ ] pin Kubernetes version to upgrade separately from Talos
 - [x] set up ZFS on LUKS on the 1TB drive for local storage
-  - [ ] make those accessible with [OpenEBS local storage](https://openebs.io/docs/concepts/data-engines/localstorage) engine
+  - [x] make those accessible with [OpenEBS local storage](https://openebs.io/docs/concepts/data-engines/localstorage) engine
 - [x] access from anywhere with Netbird
 - [x] run arbitrary Nix tooling within the cluster
   - see `talos-nix-disks` or `nix-system/nix-disks` daemonset configuration

@@ -1,12 +1,23 @@
 {
   device, # result of `disks-run rant-local search`
-  name, # eg: rant-local
+  name, # eg: pic-local
   luksUUID, # generate with: `uuidgen`
   keyFile ? "/nix-disks/passphrases/${name}",
   cryptedName ? "${name}-crypted",
   poolName ? name,
   ...
-}: {
+}: let
+  mkFs = cfg: let
+    opt = cfg.mountpoint or "none";
+    mountpoint = cfg.mountpoint or null;
+  in
+    {
+      type = "zfs_fs";
+      options.mountpoint = opt;
+    }
+    // cfg
+    // {inherit mountpoint;};
+in {
   disko.devices.disk."${cryptedName}" = {
     type = "disk";
     inherit device;
@@ -41,6 +52,18 @@
     options = {
       ashift = "12";
       "feature@large_dnode" = "enabled"; # required by dnodesize!=legacy
+    };
+    datasets = builtins.mapAttrs (name: mkFs) {
+      "internal" = {
+        mountpoint = "/var/lib/internal";
+        options."com.sun:auto-snapshot" = "true";
+      };
+      "internal/openebs/zfs-localpv" = {
+        mountpoint = "/var/lib/internal/openebs/zfs-localpv";
+      };
+      "internal/openebs/zfs-localpv/provisioned" = {
+        options."com.sun:auto-snapshot" = "false";
+      };
     };
   };
 }

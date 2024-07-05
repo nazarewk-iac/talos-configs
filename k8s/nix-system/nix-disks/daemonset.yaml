@@ -88,10 +88,11 @@ spec:
             - name: hostfs
               mountPropagation: HostToContainer
               mountPath: /hostfs
-            #- name: hostfs
-            #  subPath: dev/
-            #  mountPropagation: HostToContainer
-            #  mountPath: /dev
+            - name: hostfs
+              subPath: var/lib/internal
+              mountPropagation: Bidirectional
+              # `disko` uses `/mnt` prefix to mount stuff
+              mountPath: /mnt/var/lib/internal
           livenessProbe:
             periodSeconds: 3
             exec:

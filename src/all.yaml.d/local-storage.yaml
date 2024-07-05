@@ -1,0 +1,10 @@
+machine:
+  kubelet:
+    extraMounts:
+      - destination: /var/lib/internal
+        type: bind
+        source: /var/lib/internal
+        options:
+          - bind
+          - rshared
+          - rw

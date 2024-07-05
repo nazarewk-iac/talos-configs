@@ -1,0 +1,11 @@
+apiVersion: v2
+name: local-storage
+version: &version 4.0.1
+appVersion: *version
+dependencies:
+  - name: openebs
+    repository: https://openebs.github.io/openebs
+    version: *version
+
+sources:
+  - https://github.com/openebs/openebs/blob/main/charts

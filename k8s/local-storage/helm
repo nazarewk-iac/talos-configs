@@ -1,0 +1,50 @@
+#!/usr/bin/env bash
+set -eEuo pipefail
+test -z "${DEBUG:-}" || set -x
+
+workdir="${BASH_SOURCE[0]%/*}"
+
+release="openebs"
+chart="${workdir}"
+export namespace="openebs-system"
+args=(--namespace "$namespace")
+cmd=""
+
+handle_cmd() {
+  test -z "${cmd}"
+  cmd="$1"
+  test "${cmd}" != install || cmd="upgrade"
+  test "${cmd}" != upgrade || args+=(--install)
+  args+=("${release}" "${chart}")
+}
+
+while [[ $# -gt 0 ]]; do
+  case "$1" in
+  -*)
+    args+=("$1")
+    ;;
+  *)
+    if test -n "${cmd}"; then
+      args+=("$1")
+    else
+      cmd="$1"
+    fi
+    ;;
+  esac
+  shift
+done
+
+case "$cmd" in
+template | install | upgrade)
+  args+=("${release}" "${chart}")
+  ;;
+esac
+test "$cmd" != upgrade || args+=(--install)
+
+case "$cmd" in
+install | upgrade)
+  kubectl apply -f "${chart}/namespace.yaml"
+  ;;
+esac
+
+helm "$cmd" "${args[@]}"

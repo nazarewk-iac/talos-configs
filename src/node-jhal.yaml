@@ -8,5 +8,7 @@ machine:
         vip:
           ip: "192.168.41.5"
 
+  nodeLabels:
+    zpool.storage.kdn.im/pic-local: "true"
 cluster:
   allowSchedulingOnControlPlanes: true

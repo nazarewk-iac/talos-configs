@@ -6,16 +6,19 @@
   src = ./.;
   configs = {
     hurl-local = {
+      name = "pic-local";
       lsblk = lsblk.crucialBX5001TBThroughBay;
       luks.uuid = "6e1fb50e-adab-4cdd-96f8-b0f698c29a4f";
       disko = "${./local-storage.disko.lib.nix}";
     };
     jhal-local = {
+      name = "pic-local";
       lsblk = lsblk.crucialBX5001TBThroughBay;
       luks.uuid = "f96cf5d6-bf04-4897-87c4-fc8f13585fb7";
       disko = "${./local-storage.disko.lib.nix}";
     };
     rant-local = {
+      name = "pic-local";
       lsblk = lsblk.crucialBX5001TBThroughBay;
       luks.uuid = "5d43c8c0-ad3e-4165-bb1a-ea8a4fdadf45";
       disko = "${./local-storage.disko.lib.nix}";
@@ -52,9 +55,22 @@
         fi
         disko \
           --argstr "device" "$device" \
-          --argstr "name" "${name}" \
+          --argstr "name" "${cfg.name or name}" \
           --argstr "luksUUID" "${cfg.luks.uuid}" \
           "$@" ${cfg.disko}
+      '';
+    };
+    bin.render = mkScript {
+      name = "disks-render-${name}";
+      runtimeInputs = with pkgs; [];
+      text = ''
+        mode="''${mode:-"format"}"
+        if test "$#" -gt 0 ; then
+          mode="$1"
+          shift 1
+        fi
+        script="$(${bin.disko} /dev/fake --dry-run --mode "$mode" "$@")"
+        cat "$script"
       '';
     };
     bin.search = mkScript {

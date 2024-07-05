@@ -1,0 +1,32 @@
+apiVersion: storage.k8s.io/v1
+kind: StorageClass
+metadata:
+  name: zfs
+provisioner: zfs.csi.openebs.io
+allowVolumeExpansion: true
+parameters:
+  fstype: "zfs"
+  poolname: "pic-local/internal/openebs/zfs-localpv/provisioned"
+{{/*  recordsize: "128k"*/}}
+{{/*  compression: "off"*/}}
+{{/*  dedup: "off"*/}}
+allowedTopologies:
+  - matchLabelExpressions:
+      - key: zpool.storage.kdn.im/pic-local
+        values:
+          - "true"
+---
+
+apiVersion: storage.k8s.io/v1
+kind: StorageClass
+metadata:
+  name: zfs-block
+provisioner: zfs.csi.openebs.io
+allowVolumeExpansion: true
+parameters:
+  poolname: "pic-local/internal/openebs/zfs-localpv/provisioned"
+allowedTopologies:
+  - matchLabelExpressions:
+      - key: zpool.storage.kdn.im/pic-local
+        values:
+          - "true"
