@@ -11,6 +11,7 @@ if test -z "${workdir:-}"; then
     shift 1
   fi
 fi
+workdir="$(realpath "${workdir}")"
 
 if test -z "${namespace:-}"; then
   namespace="$1"
@@ -32,7 +33,7 @@ while [[ $# -gt 0 ]]; do
     args+=("$1")
     ;;
   *)
-    if test "${#cmds[@]}" -gt 0; then
+    if test -n "${cmd}"; then
       args+=("$1")
     else
       cmd="$1"
@@ -57,11 +58,21 @@ if test "${cmd}" == upgrade; then
   args+=(--install)
 fi
 
+cd "${chart}"
+
 case "${cmd}" in
 install | upgrade)
-  kubectl apply -f "${chart}/namespace.yaml"
+  if test -e "${chart}/namespace.yaml"; then
+    kubectl apply -f "${chart}/namespace.yaml"
+  else
+    args+=(--create-namespace)
+  fi
   ;;
 esac
+
+if ! test -d charts || ! test -e Chart.lock; then
+  helm dep build
+fi
 
 if test "${cmd}" == "upgrade"; then
   # --detailed-exitcode
