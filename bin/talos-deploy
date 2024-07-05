@@ -1,0 +1,29 @@
+#!/usr/bin/env bash
+set -eEuo pipefail
+test -z "${DEBUG:-}" || set -x
+test -n "${PRJ_ROOT:-}" || eval "$(cd "${BASH_SOURCE[0]%/*}" && direnv export bash)"
+
+all=(
+  "nix"
+  "local-storage"
+)
+selected=("$@")
+if test "${1:-"*"}" == "*"; then
+  selected=("${all[@]}")
+fi
+
+for item in "${selected[@]}"; do
+  case "${item}" in
+  nix)
+    kubectl apply -k "${PRJ_ROOT}/k8s/nix-system"
+    ;;
+  local-storage)
+    "${PRJ_ROOT}/k8s/local-storage/helm" upgrade
+    ;;
+  *)
+    echo "Invalid item: '${item}', must be one of:" >&2
+    printf " - %s\n" "${all[@]}" >&2
+    exit 1
+    ;;
+  esac
+done

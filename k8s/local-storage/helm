@@ -9,14 +9,7 @@ chart="${workdir}"
 export namespace="openebs-system"
 args=(--namespace "$namespace")
 cmd=""
-
-handle_cmd() {
-  test -z "${cmd}"
-  cmd="$1"
-  test "${cmd}" != install || cmd="upgrade"
-  test "${cmd}" != upgrade || args+=(--install)
-  args+=("${release}" "${chart}")
-}
+cmds=()
 
 while [[ $# -gt 0 ]]; do
   case "$1" in
@@ -24,7 +17,7 @@ while [[ $# -gt 0 ]]; do
     args+=("$1")
     ;;
   *)
-    if test -n "${cmd}"; then
+    if test "${#cmds[@]}" -gt 0; then
       args+=("$1")
     else
       cmd="$1"
@@ -34,17 +27,30 @@ while [[ $# -gt 0 ]]; do
   shift
 done
 
-case "$cmd" in
+if test "${cmd}" == install ; then
+  cmd="upgrade"
+fi
+cmds=("${cmd}")
+
+case "${cmd}" in
 template | install | upgrade)
   args+=("${release}" "${chart}")
   ;;
 esac
-test "$cmd" != upgrade || args+=(--install)
 
-case "$cmd" in
+if test "${cmd}" == upgrade ;then
+  args+=(--install)
+fi
+
+case "${cmd}" in
 install | upgrade)
   kubectl apply -f "${chart}/namespace.yaml"
   ;;
 esac
 
-helm "$cmd" "${args[@]}"
+if test "${cmd}" == "upgrade"; then
+  # --detailed-exitcode
+  helm diff "${cmds[@]}" "${args[@]}"
+fi
+
+helm "${cmds[@]}" "${args[@]}"
