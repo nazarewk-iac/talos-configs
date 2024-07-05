@@ -64,6 +64,9 @@ in {
       "internal/openebs/zfs-localpv/provisioned" = {
         options."com.sun:auto-snapshot" = "false";
       };
+      "internal/rook/pic-rook" = {
+        mountpoint = "/var/lib/internal/rook/pic-rook";
+      };
     };
   };
 }

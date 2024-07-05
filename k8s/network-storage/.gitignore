@@ -14,5 +14,6 @@
 ###
 
 !*.yaml
-!/*.env
-!/*.conf
+!/Chart.lock
+!/helm
+/charts/

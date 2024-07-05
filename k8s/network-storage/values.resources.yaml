@@ -1,0 +1,29 @@
+rook-ceph-cluster:
+  cephClusterSpec:
+    resources:
+      mgr:
+        limits:
+          memory: "1Gi"
+        requests:
+          #cpu: "500m"
+          cpu: 100m
+          #memory: "512Mi"
+          memory: "128Mi"
+      mon:
+        limits:
+          #memory: "2Gi"
+          memory: 1Gi
+        requests:
+          #cpu: "1000m"
+          cpu: 200m
+          #memory: "1Gi"
+          memory: "256Mi"
+      osd:
+        limits:
+          #memory: "4Gi"
+          memory: 2Gi
+        requests:
+          #cpu: "1000m"
+          cpu: 200m
+          #memory: "4Gi"
+          memory: "512Mi"

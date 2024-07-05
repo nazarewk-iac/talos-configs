@@ -1,0 +1,5 @@
+#!/usr/bin/env bash
+set -eEuo pipefail
+test -z "${DEBUG:-}" || set -x
+
+. talos-helm "rook-system" "rook-ceph-cluster" "$@"

@@ -6,7 +6,10 @@ test -n "${PRJ_ROOT:-}" || eval "$(cd "${BASH_SOURCE[0]%/*}" && direnv export ba
 all=(
   "nix"
   "local-storage"
+  "rook-operator"
+  "network-storage"
 )
+
 selected=("$@")
 if test "${1:-"*"}" == "*"; then
   selected=("${all[@]}")
@@ -17,8 +20,8 @@ for item in "${selected[@]}"; do
   nix)
     kubectl apply -k "${PRJ_ROOT}/k8s/nix-system"
     ;;
-  local-storage)
-    "${PRJ_ROOT}/k8s/local-storage/helm" upgrade
+  local-storage | network-storage | rook-operator)
+    "${PRJ_ROOT}/k8s/${item}/helm" upgrade
     ;;
   *)
     echo "Invalid item: '${item}', must be one of:" >&2

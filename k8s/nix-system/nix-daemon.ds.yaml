@@ -60,7 +60,7 @@ spec:
             limits:
               memory: 2Gi
             requests:
-              cpu: 500m
+              cpu: 200m
               memory: 128Mi
           image: docker.io/nixos/nix
           command: ["/usr/bin/env", "bash"]
@@ -90,8 +90,11 @@ spec:
               done
           resources:
             limits:
-              memory: 512Mi
+              memory: 256Mi
               cpu: 200m
+            requests:
+              memory: 32Mi
+              cpu: 10m
           envFrom:
             - configMapRef:
                 name: nix-client-env

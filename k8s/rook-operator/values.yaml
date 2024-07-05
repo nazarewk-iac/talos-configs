@@ -1,0 +1,4 @@
+rook-ceph:
+  rbacEnable: true
+  monitoring:
+    enabled: true

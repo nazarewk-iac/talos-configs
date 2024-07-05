@@ -24,6 +24,7 @@ fi
 
 chart="${workdir}"
 args=(--namespace "$namespace")
+cmd_only_args=()
 cmd=""
 cmds=()
 
@@ -51,6 +52,11 @@ test -z "${cmd}" || cmds=("${cmd}")
 case "${cmd}" in
 template | install | upgrade)
   args+=("${release}" "${chart}")
+  shopt -s nullglob
+  ls -l "${chart}/"{*.values,values.*}.yaml
+  for file in "${chart}/"{*.values,values.*}.yaml; do
+    args+=(--values="${file}")
+  done
   ;;
 esac
 
@@ -65,7 +71,7 @@ install | upgrade)
   if test -e "${chart}/namespace.yaml"; then
     kubectl apply -f "${chart}/namespace.yaml"
   else
-    args+=(--create-namespace)
+    cmd_only_args+=(--create-namespace)
   fi
   ;;
 esac
@@ -79,4 +85,4 @@ if test "${cmd}" == "upgrade"; then
   helm diff "${cmds[@]}" "${args[@]}"
 fi
 
-helm "${cmds[@]}" "${args[@]}"
+helm "${cmds[@]}" "${cmd_only_args[@]}" "${args[@]}"

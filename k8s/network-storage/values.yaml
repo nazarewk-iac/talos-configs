@@ -1,0 +1,37 @@
+rook-ceph-cluster:
+  operatorNamespace: rook-system
+  clusterName: pic-rook
+  toolbox:
+    enabled: true
+  monitoring:
+    enabled: true
+  dashboard:
+    enabled: true
+
+  cephClusterSpec:
+    dataDirHostPath: /var/lib/internal/rook/pic-rook
+
+    mon:
+      count: 3
+      volumeClaimTemplate:
+        spec:
+          storageClassName: zfs
+          resources:
+            requests:
+              storage: 10Gi
+
+    storage:
+      useAllNodes: false
+      useAllDevices: false
+      storageClassDeviceSets: []
+      nodes:
+        - name: "hurl"
+          devices: []
+        - name: "jhal"
+          devices: []
+        - name: "rant"
+          devices: []
+
+  cephBlockPools: []
+  cephFileSystems: []
+  cephObjectStores: []

@@ -64,7 +64,9 @@ Runs on 3x Raspberry Pi 4 4GB, each holding:
   - [ ] put container gcroots (maybe profiles?) into subdirectories on host
   - [ ] write some controller/operator to inject Nix configs into Pod automatically?
 - [ ] resolve `*.pic.kdn.im` DNS names
-- [ ] set up Rook/Ceph
+- [x] set up Rook/Ceph
+  - [x] set up CephCluster on RPi4s
+  - [ ] set up first disk pools
 - [ ] separate Ceph configurations for:
   - [ ] SSDs: replicated frequent/lower latency access
   - [ ] HDDs: infrequent/large files access
