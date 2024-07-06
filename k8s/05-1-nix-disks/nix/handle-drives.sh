@@ -8,16 +8,19 @@ log() {
 }
 
 handle_drive() {
-  local name="$1" ret="" empties=() formatted=() unknowns=()
-  local uuid config_uuid candidates candidate
-  export name
-  config_uuid="$(disks-jq -r '.[env.name].cfg.luks.uuid')"
+  local json="$1" ret="" empties=() formatted=() unknowns=()
+  local cur_uuid uuid candidates candidate name
+  name="$(jq -r '.key' <<<"$json")"
+  uuid="$(jq -r '.value.cfg.luks.uuid' <<<"$json")"
+  uuid="${uuid,,}"
+  export name uuid
 
   while read -r entry; do
-    uuid="$(cryptsetup luksUUID "${entry}" || :)"
-    if test -z "${uuid}"; then
+    cur_uuid="$(cryptsetup luksUUID "${entry}" || :)"
+    cur_uuid="${cur_uuid,,}"
+    if test -z "${cur_uuid}"; then
       empties+=("${entry}")
-    elif test "${uuid}" == "${config_uuid}"; then
+    elif test "${cur_uuid}" == "${uuid}"; then
       formatted+=("${entry}")
     else
       unknowns+=("${entry}")
@@ -59,7 +62,7 @@ handle_drive() {
 }
 
 ret=0
-while read -r name; do
-  handle_drive "$name" || ret="$?"
-done < <(disks-jq -r 'to_entries[].value.name')
+while read -r json; do
+  handle_drive "$json" || ret="$?"
+done < <(disks-jq -c 'to_entries[]')
 exit "${ret}"

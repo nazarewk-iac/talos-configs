@@ -2,7 +2,7 @@
   device, # result of `disks-run rant-local search`
   name, # eg: pic-local
   luksUUID, # generate with: `uuidgen`
-  keyFile ? "/nix-disks/passphrases/${name}",
+  keyFile ? "/nix-disks/passphrases/${luksUUID}",
   cryptedName ? "${name}-crypted",
   poolName ? name,
   ...

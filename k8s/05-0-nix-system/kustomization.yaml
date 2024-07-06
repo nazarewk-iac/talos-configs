@@ -3,11 +3,13 @@ namespace: nix-system
 resources:
   - namespace.yaml
   - nix-daemon.ds.yaml
-  - nix-disks/
 
 images:
   - name: docker.io/nixos/nix
     newTag: 2.23.1
+
+generatorOptions:
+  disableNameSuffixHash: true
 
 configMapGenerator:
   - name: nix-files
@@ -22,7 +24,7 @@ configMapGenerator:
 
 secretGenerator:
   - name: nix-files
-#    files:
-#      - nix.sensitive.conf
+  #    files:
+  #      - nix.sensitive.conf
   - name: nix-client-env
   - name: nix-daemon-env

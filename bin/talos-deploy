@@ -3,30 +3,39 @@ set -eEuo pipefail
 test -z "${DEBUG:-}" || set -x
 test -n "${PRJ_ROOT:-}" || eval "$(cd "${BASH_SOURCE[0]%/*}" && direnv export bash)"
 
-all=(
-  "nix"
-  "local-storage"
-  "rook-operator"
-  "network-storage"
-)
+mapfile -t all < <(cd "${PRJ_ROOT}" && ls -1 k8s)
 
 selected=("$@")
 if test "${1:-"*"}" == "*"; then
   selected=("${all[@]}")
 fi
+mapfile -t selected < <(printf "%s\n" "${selected[@]}" | sort)
+shopt -s nullglob
+
+kustomize_opts=(
+  --enable-helm
+  #--enable-exec # can employ https://kubectl.docs.kubernetes.io/guides/extending_kustomize/exec_krm_functions/
+)
 
 for item in "${selected[@]}"; do
-  case "${item}" in
-  nix)
-    kubectl apply -k "${PRJ_ROOT}/k8s/nix-system"
-    ;;
-  local-storage | network-storage | rook-operator)
-    "${PRJ_ROOT}/k8s/${item}/helm" upgrade
-    ;;
-  *)
+  src="${PRJ_ROOT}/k8s/${item}"
+  if ! test -e "${src}"; then
+    echo "Directory doesn't exist ${src}" >&2
+  fi
+  for script in "${src}/pre-render/"*.sh; do
+    bash "${script}" | kubectl apply -f -
+  done
+  if test -e "${src}/kustomization.yaml"; then
+    kustomize build "${kustomize_opts[@]}" "${src}" | kubectl apply -f -
+  elif test -x "${src}/helm"; then
+    "${src}/helm" upgrade
+  else
+    echo "Neither kustomization.yaml nor 'helm' executable were found in ${src}" >&2
     echo "Invalid item: '${item}', must be one of:" >&2
     printf " - %s\n" "${all[@]}" >&2
-    exit 1
-    ;;
-  esac
+    return 1
+  fi
+  for script in "${src}/post-render/"*.sh; do
+    bash "${script}" | kubectl apply -f -
+  done
 done

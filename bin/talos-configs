@@ -17,7 +17,10 @@ handle_file() {
 
   if test -x "${filename}"; then
     log "found executable: %s" "${filename}"
-    "${filename}" >"${cachepath}"
+    if ! "${filename}" >"${cachepath}"; then
+      log "ERROR: failed to handle ${filename}"
+      return 1
+    fi
   else
     log "found file: %s" "${filename}"
     cp "${filename}" "${cachepath}"

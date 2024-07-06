@@ -1,0 +1,7 @@
+machine:
+  nodeLabels:
+    # on 2024-07-06 started generating permanent diff
+    node-role.kubernetes.io/control-plane: ""
+
+cluster:
+  allowSchedulingOnControlPlanes: true

@@ -11,5 +11,3 @@ machine:
 
   nodeLabels:
     zpool.storage.kdn.im/pic-local: "true"
-cluster:
-  allowSchedulingOnControlPlanes: true

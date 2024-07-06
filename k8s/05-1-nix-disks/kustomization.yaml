@@ -3,6 +3,13 @@ namespace: nix-system
 resources:
   - daemonset.yaml
 
+generatorOptions:
+  disableNameSuffixHash: false
+
+images:
+  - name: docker.io/nixos/nix
+    newTag: 2.23.1
+
 configMapGenerator:
   - name: nix-disks-src
     files:

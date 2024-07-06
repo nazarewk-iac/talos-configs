@@ -11,19 +11,14 @@ mkpassphrase() {
 }
 
 secrets="{}"
-while read -r name; do
-  passphrase="$(mkpassphrase "${name}")"
-  export passphrase
-  secrets="$(gojq '.[env.name] = env.passphrase' <<<"${secrets}")"
-done < <(nix run "${PRJ_ROOT}/k8s/nix-system/nix-disks/nix#jq" -- -r 'to_entries[].value.name')
+while read -r uuid; do
+  uuid="${uuid,,}"
+  passphrase="$(mkpassphrase "${uuid}")"
+  export passphrase uuid
+  secrets="$(gojq '.[env.uuid] = env.passphrase' <<<"${secrets}")"
+done < <(nix run "${PRJ_ROOT}/k8s/05-1-nix-disks/nix#jq" -- -r 'to_entries[].value.cfg.luks.uuid')
 
 gojq --yaml-output '[{
-  apiVersion: "v1",
-  kind: "Namespace",
-  metadata: {
-    name: "nix-system",
-  },
-},{
   apiVersion: "v1",
   kind: "Secret",
   metadata: {
@@ -33,8 +28,9 @@ gojq --yaml-output '[{
   type: "Opaque",
   data: with_entries(.value |= @base64),
 }]
-| {cluster:{inlineManifests: map({
-  name: ("\(.kind)-\(.metadata.namespace)-\(.metadata.name)" | ascii_downcase),
-  contents: @json,
-})}
-}' <<<"${secrets}"
+| {
+  apiVersion: "v1",
+  kind: "List",
+  items: .,
+}
+' <<<"${secrets}"

@@ -77,8 +77,7 @@ spec:
             - name: host-nix
               mountPropagation: HostToContainer
               mountPath: /nix
-        - &client
-          name: nix-store-repair
+        - name: nix-store-repair
           image: docker.io/nixos/nix
           command: ["/usr/bin/env", "bash"]
           args:

@@ -53,7 +53,6 @@ case "${cmd}" in
 template | install | upgrade)
   args+=("${release}" "${chart}")
   shopt -s nullglob
-  ls -l "${chart}/"{*.values,values.*}.yaml
   for file in "${chart}/"{*.values,values.*}.yaml; do
     args+=(--values="${file}")
   done
