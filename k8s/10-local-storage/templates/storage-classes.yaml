@@ -3,6 +3,7 @@ kind: StorageClass
 metadata:
   name: zfs
 provisioner: zfs.csi.openebs.io
+volumeBindingMode: WaitForFirstConsumer
 allowVolumeExpansion: true
 parameters:
   fstype: "zfs"
@@ -22,6 +23,8 @@ kind: StorageClass
 metadata:
   name: zfs-block
 provisioner: zfs.csi.openebs.io
+# WaitForFirstConsumer makes localpv respect Kubernetes scheduler for pod placement
+volumeBindingMode: WaitForFirstConsumer
 allowVolumeExpansion: true
 parameters:
   poolname: "pic-local/internal/openebs/zfs-localpv/provisioned"

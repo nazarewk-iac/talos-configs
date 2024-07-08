@@ -50,7 +50,7 @@ fi
 test -z "${cmd}" || cmds=("${cmd}")
 
 case "${cmd}" in
-template | install | upgrade)
+template | install | upgrade | diff)
   args+=("${release}" "${chart}")
   shopt -s nullglob
   for file in "${chart}/"{*.values,values.*}.yaml; do

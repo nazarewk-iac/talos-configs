@@ -4,7 +4,7 @@ rook-ceph-cluster:
   toolbox:
     enabled: true
   monitoring:
-    enabled: true
+    enabled: false
   dashboard:
     enabled: true
 
@@ -23,7 +23,30 @@ rook-ceph-cluster:
     storage:
       useAllNodes: false
       useAllDevices: false
+      config:
+        osdsPerDevice: "1"
+        encryptedDevice: "true"
       storageClassDeviceSets: []
+#      storageClassDeviceSets:
+#        - name: rook-ceph-hdd
+#          count: 2
+#          portable: true
+#          encrypted: true
+#          config:
+#            deviceClass: hdd
+#          volumeClaimTemplates:
+#            - metadata:
+#                labels:
+#                  rook.storage.kdn.im/device-class: hdd
+#              spec:
+#                storageClassName: manual-rook-ceph-cluster
+#                resources:
+#                  requests:
+#                    storage: 4040G
+#                volumeMode: Block
+#                accessModes:
+#                  - ReadWriteOnce
+
       nodes:
         - name: "hurl"
           devices: []
@@ -32,6 +55,30 @@ rook-ceph-cluster:
         - name: "rant"
           devices: []
 
-  cephBlockPools: []
+  cephBlockPools:
+    - name: hdd-2-replicas
+      spec:
+        deviceClass: hdd
+        failureDomain: host
+        replicated:
+          size: 2
+      storageClass:
+        name: block-hdd-2-replicas
+        enabled: true
+        isDefault: false
+        allowVolumeExpansion: true
+        reclaimPolicy: Delete
+        parameters: &storage-class-parameters
+          # copied from https://github.com/nazarewk-iac/k8s-configs/blob/4930045b4fd522d0ee076ee88ac808b63e57da88/services/rook/ceph/cluster/chart.yaml#L147-L180
+          # The secrets contain Ceph admin credentials.
+          csi.storage.k8s.io/provisioner-secret-name: rook-csi-rbd-provisioner
+          csi.storage.k8s.io/provisioner-secret-namespace: rook-system
+          csi.storage.k8s.io/controller-expand-secret-name: rook-csi-rbd-provisioner
+          csi.storage.k8s.io/controller-expand-secret-namespace: rook-system
+          csi.storage.k8s.io/node-stage-secret-name: rook-csi-rbd-node
+          csi.storage.k8s.io/node-stage-secret-namespace: rook-system
+          csi.storage.k8s.io/node-publish-secret-name: rook-csi-rbd-node
+          csi.storage.k8s.io/node-publish-secret-namespace: rook-system
+          csi.storage.k8s.io/fstype: ext4
   cephFileSystems: []
   cephObjectStores: []

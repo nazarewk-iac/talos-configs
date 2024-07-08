@@ -1,0 +1,29 @@
+apiVersion: v1
+kind: PersistentVolume
+metadata:
+  name: rook-ceph-hdd-0
+  labels:
+    storage.kdn.im/device-class: hdd
+  annotations:
+    storage.kdn.im/descrition: "HDD - 4 TB - Seagate Ironwolf Pro"
+    storage.kdn.im/notes: ""
+spec:
+  storageClassName: manual-rook-ceph-cluster
+  capacity:
+    storage: 4090G
+  accessModes:
+    - ReadWriteOnce
+  persistentVolumeReclaimPolicy: Retain
+  volumeMode: Block
+  local:
+    #path: /dev/disk/by-id/ata-ST4000NE001-2MA101_WS238BWF
+    # over USB disk bay
+    path: /dev/disk/by-id/usb-ST4000NE_001-2MA101_152D00539000-0:1
+  nodeAffinity:
+    required:
+      nodeSelectorTerms:
+        - matchExpressions:
+            - key: kubernetes.io/hostname
+              operator: In
+              values:
+                - rant

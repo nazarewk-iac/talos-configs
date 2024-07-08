@@ -15,5 +15,8 @@ else
 fi
 cmd=(nix develop "${nix_develop_args[@]}" /root/src --command "${cmd[@]}")
 
-pod="$(kubectl -n nix-system get pod -o name -l name=nix-disks --field-selector spec.nodeName="${node}")"
+selectors="spec.nodeName=${node}"
+selectors="${selectors},status.phase=Running"
+
+pod="$(kubectl -n nix-system get pod -o name -l name=nix-disks --field-selector "${selectors}")"
 kubectl -n nix-system exec "${kubectl_exec_args[@]}" -c nix "${pod}" -- "${cmd[@]}"

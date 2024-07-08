@@ -55,7 +55,8 @@
         fi
         disko \
           --argstr "device" "$device" \
-          --argstr "name" "${lib.strings.toLower cfg.zpool.name}" \
+          --argstr "name" "${lib.strings.toLower name}" \
+          --argstr "poolName" "${lib.strings.toLower cfg.zpool.name}" \
           --argstr "luksUUID" "${cfg.luks.uuid}" \
           "$@" ${cfg.disko}
       '';

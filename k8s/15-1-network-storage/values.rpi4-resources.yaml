@@ -1,5 +1,9 @@
 rook-ceph-cluster:
   cephClusterSpec:
+    mgr:
+      count: 1
+    mon:
+      count: 1
     resources:
       mgr:
         limits:
