@@ -36,15 +36,33 @@ kubectl get pod -A
 
 # Overview
 
+## Primary nodes
+
+Runs on 3x self-built Mini ITX NAS boxes, each consisting of:
+
+- [SzBox N100 mobo](https://www.amazon.pl/dp/B0CQ4PX7WX):
+  - 4x 2.5GbE ethernet
+  - 2x NVMe connectors
+  - 6x SATA connectors
+- [Jonsbo N2](https://www.jonsbo.com/en/products/N2Black.html) case:
+  - 5x 3.5" removable SATA
+  - 2x 2.5" SATA mounted inside
+- 32GB RAM
+- drives:
+  - 250GB NVMe as Talos system drive
+  - 1TB NVMe as the primary cache/local storage
+  - 1TB SSD for Ceph storage
+  - 4TB HDD for Ceph storage
+
+## secondary nodes
+
+Not yet running.
+
 Runs on 3x Raspberry Pi 4 4GB, each holding:
 
 - [UEFI-boot](https://github.com/pftf/RPi4) SD card having ONLY boot configuration (see Boot sequence issues)
 - (any) SD card holding [RPi4 UEFI-boot](https://github.com/pftf/RPi4) and nothing else
 - 1x small ~256 GB SSDs holding encrypted Talos system partitions: `STATE` and `EPHEMERAL`
-- 1x 3.5/2.5" [`ORICO-6648US3-C-V1` 4x disk bay](https://www.orico.cc/us/product/detail/3270.html)
-  - TODO: replace this, see known issues why
-  - 1x [Crucial BX500 1TB](https://www.crucial.com/ssd/bx500/ct1000bx500ssd1) for local/persistent storage drive (so Talos system disks can be safely wiped)
-  - 2-3x of various spare SSD/HDD drives to join into Ceph cluster
 
 ## Scope
 

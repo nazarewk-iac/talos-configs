@@ -1,0 +1,23 @@
+# dual-stack (IPv4 + IPv6) network
+# took some ideas from https://github.com/siderolabs/talos/issues/8115#issuecomment-2068026656
+cluster:
+  network:
+    podSubnets:
+      - fd31:e17c:f07f:8b6d::/64 # random ULA subnet
+      - 10.209.0.0/16
+    serviceSubnets:
+      # WARNING: IPv6 service subnet cannot be larger than /108 (previous discussion suggested /112)
+      #   see linked configs from https://github.com/siderolabs/talos/issues/8115#issuecomment-2068026656
+      - fd31:e17c:f07f:2dc0:4e2b:2ebc:cbc0:0/108 # random ULA subnet
+      - 10.213.0.0/16
+  etcd:
+    advertisedSubnets:
+      - fd31:e17c:f07f:1::/64 # primary ULA subnet
+      - 192.168.41.0/24
+
+machine:
+  kubelet:
+    nodeIP:
+      validSubnets:
+        - fd31:e17c:f07f:1::/64 # primary ULA subnet
+        - 192.168.41.0/24
