@@ -25,9 +25,17 @@ gen_node() {
   args+=(--output="${cache}/node-$name.yaml")
   args+=(--output-types="$type")
   args+=(--additional-sans="$(jq -r '
-    [.lan.dns, .links[.lan.link].ipv4, .links[.lan.link].ipv6, env.name, env.vip]
+    [
+      .lan.dns,
+      .links[.lan.link].ipv4,
+      .links[.lan.link].ipv6,
+      env.name, # this seems to already be part of certificates
+      "::", #apiserver
+      "::1" # TODO: controller-manager, scheduler ?
+    ]
     | map(select(. != null and length > 0))
-    | sort | join(",")
+    | unique # it also sorts
+    | join(",")
   ' <<<"${node_json}")")
 
   talosctl gen config "${args[@]}"
@@ -71,6 +79,8 @@ main() {
 
   secrets="$(talos-gen-configs -- secrets.yaml)"
   cluster_domain="$(talos-cfg -r '.cluster.domain')"
+
+  default_endpoint="${default_endpoint:-"$(talos-cfg -r ".nodes | to_entries[0].value | .links[.lan.link].ipv4")"}"
 
   endpoints=()
   controlplanes=()
@@ -119,15 +129,9 @@ main() {
         endpoints+=("${!talos_up}")
       fi
       ;;
-    "")
-      if test "${type}" == "controlplane"; then
-        log "Fallback controlplane node at ${ip}"
-        endpoints+=("${ip}")
-      fi
-      ;;
     esac
   done < <(talos-cfg-nodes -c .)
-  test "${#endpoints[@]}" -gt 0 || endpoints=("${controlplanes[0]}")
+  test "${#endpoints[@]}" -gt 0 || endpoints=("${default_endpoint}")
 
   log "controlplanes:"
   log " - %s" "${controlplanes[@]}"
@@ -141,7 +145,7 @@ main() {
   vip="$(talos-cfg -r '.cluster.vip')"
   export vip
   kubernetes_endpoint="https://${endpoints[0]}:6443"
-  for ip in "${vip}" "${endpoints[@]}"; do
+  for ip in "${endpoints[@]}"; do
     if can_connect "${ip}" 6443 &>/dev/null; then
       kubernetes_endpoint="https://${ip}:6443"
       break

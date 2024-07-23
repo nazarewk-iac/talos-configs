@@ -1,0 +1,5 @@
+machine:
+  install:
+    diskSelector:
+      model: "Samsung SSD 980 250GB"
+      serial: "S64BNU0X307829P"

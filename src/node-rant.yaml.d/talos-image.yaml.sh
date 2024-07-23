@@ -8,5 +8,5 @@ cat <<EOF
 # Talos machine configuration patch
 machine:
   install:
-    image: '$(talos-image rant upgrade)'
+    image: '$(talos-image-url rant upgrade)'
 EOF

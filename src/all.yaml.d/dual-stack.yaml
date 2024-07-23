@@ -1,6 +1,18 @@
 # dual-stack (IPv4 + IPv6) network
 # took some ideas from https://github.com/siderolabs/talos/issues/8115#issuecomment-2068026656
 cluster:
+  # listen on IPv6 interfaces
+  # TODO: set up firewall to deny non-local connections
+  apiServer:
+    extraArgs:
+      bind-address: "::"
+  controllerManager:
+    extraArgs:
+      bind-address: "::1"
+      node-cidr-mask-size-ipv6: "80" # defaults to /64 - whole assigned ULA subnet
+  scheduler:
+    extraArgs:
+      bind-address: "::1"
   network:
     podSubnets:
       - fd31:e17c:f07f:8b6d::/64 # random ULA subnet
@@ -14,10 +26,15 @@ cluster:
     advertisedSubnets:
       - fd31:e17c:f07f:1::/64 # primary ULA subnet
       - 192.168.41.0/24
-
 machine:
   kubelet:
     nodeIP:
       validSubnets:
         - fd31:e17c:f07f:1::/64 # primary ULA subnet
         - 192.168.41.0/24
+  features:
+    kubePrism:
+      # KubePrism is hardcoded to ipv4:
+      #   https://github.com/siderolabs/talos/issues/8115#issuecomment-1968758130
+      #   https://github.com/siderolabs/talos/blob/0872901783785239920d4f484a2ab1e224f84b6f/internal/app/machined/pkg/controllers/k8s/control_plane.go#L258-L262
+      enabled: false

@@ -8,5 +8,5 @@ cat <<EOF
 # Talos machine configuration patch
 machine:
   install:
-    image: '$(talos-image pwet upgrade)'
+    image: '$(talos-image-url pwet upgrade)'
 EOF

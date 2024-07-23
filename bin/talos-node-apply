@@ -5,18 +5,19 @@ test -n "${PRJ_ROOT:-}" || eval "$(cd "${BASH_SOURCE[0]%/*}" && direnv export ba
 
 nodes=()
 args=()
+default_all=0
 
 while [[ $# -gt 0 ]]; do
   case "$1" in
   --check)
-    mapfile -t -O "${#nodes[@]}" nodes < <(talos-cfg -r '.nodes|keys[]')
+    default_all=1
     args+=('--dry-run')
     ;;
   -*)
     args+=("$1")
     ;;
   '*')
-    mapfile -t -O "${#nodes[@]}" nodes < <(talos-cfg -r '.nodes|keys[]')
+    default_all=1
     ;;
   *)
     nodes+=("$1")
@@ -24,6 +25,10 @@ while [[ $# -gt 0 ]]; do
   esac
   shift
 done
+
+test "${#nodes[@]}" -gt 0 || test "${default_all}" == 0 || mapfile -t nodes < <(talos-cfg -r '.nodes|to_entries[]|select(.value.enable).key')
+
+echo "Running for nodes: ${nodes[*]}" >&2
 
 for node in "${nodes[@]}"; do
   . talosctl-node "$node" apply-config --file="${PRJ_CACHE_HOME}/talos/node-${node}.yaml" "${args[@]}"

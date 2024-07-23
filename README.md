@@ -74,6 +74,8 @@ Runs on 3x Raspberry Pi 4 4GB, each holding:
 - [x] integrate with Nix-based development environment
 - [x] securely store sensitive data/configuration using `pass`:
   - [x] read/write/sync using `talos-pass`
+- [x] dual-stack (IPv4 + IPv6)
+- [ ] use Cilium CNI
 - [x] figure out update/upgrade/reconfiguration procedures:
   - [x] reconfigure nodes using `talos-node-apply`
   - [x] upgrade (Talos) nodes using `talos-node-upgrade`
@@ -115,6 +117,22 @@ Based on following materials:
 
 - https://www.talos.dev/v1.7/talos-guides/install/single-board-computers/rpi_generic/
 - https://www.sidero.dev/v0.6/guides/rpi4-as-servers/
+
+## Preparing CWWK N100
+
+- [ ] boot the Talos Installer SecureBoot ISO & select `Enroll Secure Boot keys: auto` from boot menu
+- [ ] reboot into Talos Installer ISO, note down the IP or get it from router `fd31:e17c:f07f:1:aab8:e0ff:fe04:130d`
+- [ ] set up `hostname.yaml`
+- [ ] set up `install-disk.yaml`:
+  - `talosctl -n fd31:e17c:f07f:1:aab8:e0ff:fe04:130d disks --insecure`
+- [ ] set up `networking.yaml`:
+  - generate DUID with `uuidget | tr -d '-'`, store it here and in `config.json`
+  - `talosctl -n fd31:e17c:f07f:1:aab8:e0ff:fe04:130d get addresses --insecure`
+- [ ] fill in all network interfaces:
+  - `talosctl -n fd31:e17c:f07f:1:aab8:e0ff:fe04:130d get link --insecure`
+- run `talos-gen`
+- [ ] apply node config:
+  - `talos-node-apply --insecure turo`
 
 ## Preparing Raspberry Pi 4
 

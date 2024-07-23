@@ -5,5 +5,7 @@ machine:
       rotate-server-certificates: true
 cluster:
   extraManifests:
+    # TODO: approver might not work until CNI is up and running? maybe could deploy with kustomize?
     - https://raw.githubusercontent.com/alex1989hu/kubelet-serving-cert-approver/main/deploy/standalone-install.yaml
+    # TODO: this might prevent API server from starting correctly?
     - https://github.com/kubernetes-sigs/metrics-server/releases/latest/download/components.yaml

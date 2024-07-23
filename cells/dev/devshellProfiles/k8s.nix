@@ -13,6 +13,7 @@
     kubectl
     kustomize
     helmfile
+    cilium-cli
     (pkgs.wrapHelm pkgs.kubernetes-helm {
       plugins = with pkgs.kubernetes-helmPlugins; [
         helm-diff

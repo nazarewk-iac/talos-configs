@@ -5,8 +5,6 @@ machine:
       - deviceSelector:
           hardwareAddr: "dc:a6:32:7a:21:e3"
         dhcp: true
-        vip:
-          ip: "192.168.41.5"
 
   nodeLabels:
     zpool.storage.kdn.im/pic-local: "false"

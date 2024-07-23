@@ -7,7 +7,6 @@
   },
   "cluster": {
     "name": "pic",
-    "vip": "192.168.41.5",
     "domain": "pic.kdn.im"
   },
   "nodes": {
@@ -53,8 +52,24 @@
       },
       "lan": {
         "dns": "turo.lan.",
-        "mac": "",
-        "ipv4": ""
+        "duid": "e5d81626600c43ffa4d9af30bb4dd07a",
+        "link": "enp2s0"
+      },
+      "links": {
+        "enp2s0": {
+          "mac": "A8:B8:E0:04:13:0D",
+          "ipv4": "192.168.41.35",
+          "ipv6": "fd31:e17c:f07f:1:aab8:e0ff:fe04:130d"
+        },
+        "enp3s0": {
+          "mac": "A8:B8:E0:04:13:0E"
+        },
+        "enp4s0": {
+          "mac": "A8:B8:E0:04:13:0F"
+        },
+        "enp5s0": {
+          "mac": "A8:B8:E0:04:13:10"
+        }
       }
     },
     "yost": {
@@ -68,8 +83,24 @@
       },
       "lan": {
         "dns": "yost.lan.",
-        "mac": "",
-        "ipv4": ""
+        "duid": "99155f69dee348718de534d4bfec47e6",
+        "link": "enp2s0"
+      },
+      "links": {
+        "enp2s0": {
+          "mac": "",
+          "ipv4": "",
+          "ipv6": ""
+        },
+        "enp3s0": {
+          "mac": ""
+        },
+        "enp4s0": {
+          "mac": ""
+        },
+        "enp5s0": {
+          "mac": ""
+        }
       }
     },
     "rant": {
