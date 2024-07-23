@@ -6,10 +6,10 @@ test -n "${PRJ_ROOT:-}" || eval "$(cd "${BASH_SOURCE[0]%/*}" && direnv export ba
 filename="$1"
 shift
 version="$(talos-cfg -r .talos.version)"
-out="${PRJ_ROOT}/talos-${version}/${filename}"
+out="${PRJ_CACHE_HOME}/talos/v${version}/${filename}"
+mkdir -p "${out%/*}"
 
 test -e "${out}" || {
-  mkdir -p "${out%/*}"
   curl -sf -L "https://github.com/siderolabs/talos/releases/download/v${version}/${filename}" -o "${out}"
   test "$#" == 0 || chmod "$@" "${out}"
 }

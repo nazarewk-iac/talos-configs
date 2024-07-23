@@ -10,17 +10,26 @@ nix develop --command fish
 # (re-)generate configurations
 talos-init
 
-# first node
-talos-apply --insecure rant
-# boostrap only once
-talosctl-node rant bootstrap
+# generate an ISO
+talos-disk-overwrite /dev/disk/by-id/usb-Samsung_Portable_SSD_T5_1234567D585A-0:0 pwet iso
 
-talosctl-node rant kubeconfig --force
+# in BIOS enter Secure Boot "Setup Mode" (becomes visible when doing custom secure boot)
+# plug in the USB
+# select from Talos boot menu: `Enroll Secure Boot keys: auto`
+# confirm presence of the new keys in BIOS (Secure Boot active and/or custom keys present)
+
+# first node
+talos-apply --insecure pwet
+
+# boostrap only the first nose
+talosctl-node pwet bootstrap
+
+talosctl-node pwet kubeconfig --force
 kubectl get node
 kubectl get pod -A
 
 # rest of nodes
-talos-apply --insecure hurl jhal
+talos-apply --insecure turo yost
 kubectl get node
 kubectl get pod -A
 ```

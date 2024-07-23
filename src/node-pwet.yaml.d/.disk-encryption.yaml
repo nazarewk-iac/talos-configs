@@ -1,0 +1,19 @@
+# tpm-disk-encryption.yaml
+machine:
+  systemDiskEncryption:
+    ephemeral:
+      provider: luks2
+      keys:
+        - slot: 0
+          tpm: {}
+        - static:
+            passphrase: null # filled in by the script
+          slot: 1
+    state:
+      provider: luks2
+      keys:
+        - slot: 0
+          tpm: {}
+        - static:
+            passphrase: null # filled in by the script
+          slot: 1

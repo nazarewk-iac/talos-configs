@@ -9,4 +9,14 @@ machine:
           ip: "192.168.41.5"
 
   nodeLabels:
-    zpool.storage.kdn.im/pic-local: "true"
+    zpool.storage.kdn.im/pic-local: "false"
+
+  install:
+    diskSelector:
+      size: "< 300GB"
+    extraKernelArgs:
+      # TODO: switch to kernel module configs for usb-storage? https://www.talos.dev/v1.6/reference/configuration/v1alpha1/config/#Config.machine.kernel.modules.
+      # SK Hynix over Zenwire USB reports as USB bridge (not a disk!)
+      # see https://the-sz.com/products/usbid/index.php?v=152d&p=0562&n=
+      # this resolves a lot of UAS errors delaying boot by a few minutes
+      - "usb-storage.quirks=152d:0562:u"

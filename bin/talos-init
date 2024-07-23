@@ -79,6 +79,13 @@ main() {
 
   while read -r node_json; do
     log "discovering: ${node_json}"
+    enabled="$(jq -r ".enable" <<<"${node_json}")"
+
+    if test "${enabled}" != "true"; then
+      log "DISABLED: ${node_json}"
+      continue
+    fi
+
     ip="$(jq -r ".lan.ip" <<<"${node_json}")"
     dns="$(jq -r ".lan.dns" <<<"${node_json}")"
     name="$(jq -r ".name" <<<"${node_json}")"

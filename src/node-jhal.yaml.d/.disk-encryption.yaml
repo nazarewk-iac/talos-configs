@@ -1,0 +1,18 @@
+machine:
+  systemDiskEncryption:
+    ephemeral:
+      provider: luks2
+      keys:
+        - nodeID: {}
+          slot: 0
+        - static:
+            passphrase: null # filled in by the script
+          slot: 1
+    state:
+      provider: luks2
+      keys:
+        - nodeID: {}
+          slot: 0
+        - static:
+            passphrase: null # filled in by the script
+          slot: 1

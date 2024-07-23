@@ -1,0 +1,12 @@
+machine:
+  network:
+    interfaces:
+      - deviceSelector:
+          hardwareAddr: "a8:b8:e0:04:10:b8"
+        dhcp: true
+        dhcpOptions:
+          ipv4: true
+          ipv6: true
+          duidv6: "2f20675fe58848c5bdf33d74057a1ee0"
+        vip:
+          ip: "192.168.41.5"

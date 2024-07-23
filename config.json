@@ -8,8 +8,59 @@
     "domain": "pic.kdn.im"
   },
   "nodes": {
-    "rant": {
+    "pwet": {
+      "enable": true,
       "type": "controlplane",
+      "image": {
+        "arch": "amd64",
+        "type": "iso",
+        "schematic": "nas",
+        "secure-boot": true
+      },
+      "lan": {
+        "dns": "pwet.lan.",
+        "mac": "A8:B8:E0:04:10:B8",
+        "ip": "192.168.41.141"
+      }
+    },
+    "turo": {
+      "enable": false,
+      "type": "controlplane",
+      "image": {
+        "type": "iso",
+        "arch": "amd64",
+        "schematic": "nas",
+        "secure-boot": true
+      },
+      "lan": {
+        "dns": "turo.lan.",
+        "mac": "",
+        "ip": ""
+      }
+    },
+    "yost": {
+      "enable": false,
+      "type": "controlplane",
+      "image": {
+        "type": "iso",
+        "arch": "amd64",
+        "schematic": "nas",
+        "secure-boot": true
+      },
+      "lan": {
+        "dns": "yost.lan.",
+        "mac": "",
+        "ip": ""
+      }
+    },
+    "rant": {
+      "enable": false,
+      "type": "worker",
+      "image": {
+        "arch": "arm64",
+        "schematic": "rpi4",
+        "secure-boot": false
+      },
       "lan": {
         "dns": "rant.lan.",
         "mac": "DC:A6:32:7A:22:22",
@@ -17,7 +68,13 @@
       }
     },
     "hurl": {
-      "type": "controlplane",
+      "enable": false,
+      "type": "worker",
+      "image": {
+        "arch": "arm64",
+        "schematic": "rpi4",
+        "secure-boot": false
+      },
       "lan": {
         "dns": "hurl.lan.",
         "mac": "DC:A6:32:7A:21:E3",
@@ -25,15 +82,18 @@
       }
     },
     "jhal": {
-      "type": "controlplane",
+      "enable": false,
+      "type": "worker",
+      "image": {
+        "arch": "arm64",
+        "schematic": "rpi4",
+        "secure-boot": false
+      },
       "lan": {
         "dns": "jhal.lan.",
         "mac": "DC:A6:32:7A:22:2B",
         "ip": "192.168.41.167"
       }
     }
-  },
-  "disks": {
-    "rant-local": {}
   }
 }

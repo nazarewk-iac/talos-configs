@@ -7,6 +7,8 @@
 
   inputs.omnibus.url = "github:gtrunsec/omnibus";
   inputs.nixpkgs.url = "github:NixOS/nixpkgs/nixpkgs-unstable";
+  inputs.talhelper.url = "github:budimanjojo/talhelper";
+  inputs.talhelper.inputs.nixpkgs.follows = "nixpkgs";
 
   outputs = {omnibus, ...} @ inputs: let
     inherit (inputs.nixpkgs) lib;

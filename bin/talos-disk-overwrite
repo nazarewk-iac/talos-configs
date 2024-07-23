@@ -4,9 +4,32 @@ test -z "${DEBUG:-}" || set -x
 test -n "${PRJ_ROOT:-}" || eval "$(cd "${BASH_SOURCE[0]%/*}" && direnv export bash)"
 
 disk="$1"
-image="${2:-"default"}"
-url="$(talos-image install "${image}")"
+node_name="${2}"
+node="$(name="${node_name}" talos-cfg -cM '.nodes[env.name]')"
+schematic="$(jq -r .image.schematic <<<"$node")"
+url="$(talos-image "${node_name}" install)"
 version="$(talos-cfg -r .talos.version)"
-out="${PRJ_ROOT}/talos-${version}/${image}.metal-arm64.raw.xz"
+filename="${url##*/}"
+out="${PRJ_CACHE_HOME}/talos/v${version}/${schematic}.${filename}"
+mkdir -p "${out%/*}"
 test -e "$out" || curl --fail "${url}" -o "$out"
-xz -d --stdout "$out" | sudo dd if=/dev/stdin conv=fsync bs=4M status=progress of="${disk}"
+
+unpack() {
+  case "$out" in
+  *.zst)
+    unzstd --stdout "$out"
+    ;;
+  *.iso)
+    cat "$out"
+    ;;
+  *.xz)
+    xz -d --stdout "$out"
+    ;;
+  *)
+    echo "ERROR: invalid file extension $out" >&2
+    exit 1
+    ;;
+  esac
+}
+
+unpack | sudo dd if=/dev/stdin conv=fsync bs=4M status=progress of="${disk}"

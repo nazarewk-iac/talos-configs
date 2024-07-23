@@ -11,13 +11,15 @@
     }
   ];
   packages = with pkgs; [
-    jq
-    gnused
-    findutils
-    pass
-    diffutils
     curl
+    diffutils
+    findutils
+    gnused
+    gojq
+    jq
     netcat
+    pass
     yq-go
+    zstd
   ];
 }

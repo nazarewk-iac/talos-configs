@@ -1,0 +1,19 @@
+# dual-stack (IPv4 + IPv6) network
+cluster:
+  network:
+    podSubnets:
+      - 10.209.0.0/16
+      - fd31:e17c:f07f:628f::/64 # ULA subnet
+    serviceSubnets:
+      - 10.213.0.0/16
+  etcd:
+    advertisedSubnets:
+      - 192.168.41.0/24
+      - fd31:e17c:f07f::/48 # ULA
+
+machine:
+  kubelet:
+    nodeIP:
+      validSubnets:
+        - 192.168.41.0/24
+        - fd31:e17c:f07f::/48 # ULA

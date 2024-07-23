@@ -2,7 +2,11 @@
 set -eEuo pipefail
 test -z "${DEBUG:-}" || set -x
 test -n "${PRJ_ROOT:-}" || eval "$(cd "${BASH_SOURCE[0]%/*}" && direnv export bash)"
+cd "${BASH_SOURCE[0]%/*}"
 
-node="$1"
-shift
-talosctl-node "${node}" upgrade --image "$(talos-image "${node}" upgrade)" "$@"
+cat <<EOF
+# Talos machine configuration patch
+machine:
+  install:
+    image: '$(talos-image pwet upgrade)'
+EOF
