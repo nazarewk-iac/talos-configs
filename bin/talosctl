@@ -3,7 +3,7 @@ set -eEuo pipefail
 test -z "${DEBUG:-}" || set -x
 test -n "${PRJ_ROOT:-}" || eval "$(cd "${BASH_SOURCE[0]%/*}" && direnv export bash)"
 
-cmd="$(talos-file "$(go env --json | jq -r '"talosctl-\(.GOOS)-\(.GOARCH)"')" +x)"
+cmd="$(talos-release-file "$(go env --json | jq -r '"talosctl-\(.GOOS)-\(.GOARCH)"')" +x)"
 __talosctl_args=(
   --cluster="$(talos-cfg -r '.cluster.name')"
 )

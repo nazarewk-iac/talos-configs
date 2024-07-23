@@ -20,12 +20,12 @@ gen_node() {
   node_json="$(talos-cfg -cr '.nodes[env.name]')"
   type="$(jq -r '.type' <<<"${node_json}")"
   mapfile -t -O "${#args[@]}" args < <(
-    talos-configs -- "node-${name}.yaml" | sed 's/^/--config-patch=@/g'
+    talos-gen-configs -- "node-${name}.yaml" | sed 's/^/--config-patch=@/g'
   )
   args+=(--output="${cache}/node-$name.yaml")
   args+=(--output-types="$type")
   args+=(--additional-sans="$(jq -r '
-    [.lan.dns, .lan.ip, env.name, env.vip]
+    [.lan.dns, .links[.lan.link].ipv4, .links[.lan.link].ipv6, env.name, env.vip]
     | map(select(. != null and length > 0))
     | sort | join(",")
   ' <<<"${node_json}")")
@@ -69,7 +69,7 @@ main() {
   cd "${PRJ_ROOT}"
   cache="${PRJ_CACHE_HOME}/talos"
 
-  secrets="$(talos-configs -- secrets.yaml)"
+  secrets="$(talos-gen-configs -- secrets.yaml)"
   cluster_domain="$(talos-cfg -r '.cluster.domain')"
 
   endpoints=()
@@ -86,7 +86,7 @@ main() {
       continue
     fi
 
-    ip="$(jq -r ".lan.ip" <<<"${node_json}")"
+    ip="$(jq -r ".links[.lan.link].ipv6" <<<"${node_json}")"
     dns="$(jq -r ".lan.dns" <<<"${node_json}")"
     name="$(jq -r ".name" <<<"${node_json}")"
     type="$(jq -r ".type" <<<"${node_json}")"
@@ -151,14 +151,16 @@ main() {
 
   config_args=(
     "$(talos-cfg -r '.cluster.name')" "${kubernetes_endpoint}"
-    --force --output="${cache}" --talos-version="v$(talos-cfg -r '.talos.version')"
+    --force --output="${cache}"
+    --talos-version="v$(talos-cfg -r '.talos.version')"
+    --kubernetes-version="v$(talos-cfg -r '.k8s.version')"
     --with-secrets="${secrets}"
     --dns-domain="${cluster_domain}"
   )
   mapfile -t -O "${#config_args[@]}" config_args < <(
-    talos-configs -- "controlplane.yaml" | sed 's/^/--config-patch-control-plane=@/g'
-    talos-configs -- "worker.yaml" | sed 's/^/--config-patch-worker=@/g'
-    talos-configs -- "all.yaml" | sed 's/^/--config-patch=@/g'
+    talos-gen-configs -- "controlplane.yaml" | sed 's/^/--config-patch-control-plane=@/g'
+    talos-gen-configs -- "worker.yaml" | sed 's/^/--config-patch-worker=@/g'
+    talos-gen-configs -- "all.yaml" | sed 's/^/--config-patch=@/g'
   )
 
   test -e "${secrets}" || talosctl gen secrets --output-file="${secrets}"

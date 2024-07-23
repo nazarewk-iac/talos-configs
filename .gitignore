@@ -19,6 +19,7 @@
 !*.sh
 
 !/bin/talos*
+!/bin/k8s*
 !/config.json
 !/src/**/*.yaml
 !/image-schematics/*.yaml

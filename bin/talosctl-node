@@ -2,6 +2,6 @@
 set -eEuo pipefail
 test -z "${DEBUG:-}" || set -x
 test -n "${PRJ_ROOT:-}" || eval "$(cd "${BASH_SOURCE[0]%/*}" && direnv export bash)"
-addr="$(talos-cfg -r ".nodes.${1}.lan.ip")"
+addr="$(talos-cfg -r ".nodes.${1} | .links[.lan.link].ipv6")"
 addr="${1}"
 talosctl --nodes "${addr}" "${@:2}"

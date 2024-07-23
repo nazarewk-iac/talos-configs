@@ -8,10 +8,10 @@ Repository containing my personal Talos Kubernetes setup.
 nix develop --command fish
 
 # (re-)generate configurations
-talos-init
+talos-gen
 
 # generate an ISO
-talos-disk-overwrite /dev/disk/by-id/usb-Samsung_Portable_SSD_T5_1234567D585A-0:0 pwet iso
+talos-installer-disk-write /dev/disk/by-id/usb-Samsung_Portable_SSD_T5_1234567D585A-0:0 pwet iso
 
 # in BIOS enter Secure Boot "Setup Mode" (becomes visible when doing custom secure boot)
 # plug in the USB
@@ -19,7 +19,7 @@ talos-disk-overwrite /dev/disk/by-id/usb-Samsung_Portable_SSD_T5_1234567D585A-0:
 # confirm presence of the new keys in BIOS (Secure Boot active and/or custom keys present)
 
 # first node
-talos-apply --insecure pwet
+talos-node-apply --insecure pwet
 
 # boostrap only the first nose
 talosctl-node pwet bootstrap
@@ -29,18 +29,21 @@ kubectl get node
 kubectl get pod -A
 
 # rest of nodes
-talos-apply --insecure turo yost
+talos-node-apply --insecure turo yost
 kubectl get node
 kubectl get pod -A
 ```
 
 # Overview
 
+It is running dual-stack (both LAN and WAN) on a mix of 10/2.5/1 GbE (mostly managed) switches.
+
 ## Primary nodes
 
 Runs on 3x self-built Mini ITX NAS boxes, each consisting of:
 
 - [SzBox N100 mobo](https://www.amazon.pl/dp/B0CQ4PX7WX):
+  - seems to be searchable under `CWWK N100`
   - 4x 2.5GbE ethernet
   - 2x NVMe connectors
   - 6x SATA connectors
@@ -54,9 +57,9 @@ Runs on 3x self-built Mini ITX NAS boxes, each consisting of:
   - 1TB SSD for Ceph storage
   - 4TB HDD for Ceph storage
 
-## secondary nodes
+## Raspberry Pi4 nodes
 
-Not yet running.
+Not running yet, but keeping the section
 
 Runs on 3x Raspberry Pi 4 4GB, each holding:
 
@@ -64,33 +67,28 @@ Runs on 3x Raspberry Pi 4 4GB, each holding:
 - (any) SD card holding [RPi4 UEFI-boot](https://github.com/pftf/RPi4) and nothing else
 - 1x small ~256 GB SSDs holding encrypted Talos system partitions: `STATE` and `EPHEMERAL`
 
+### RPi4 scope
+
 ## Scope
 
 - [x] integrate with Nix-based development environment
-- [x] set up Talos on multi-disk Raspberry Pi 4:
-  - [x] [RPi4 UEFI-boot](https://github.com/pftf/RPi4) SD card having ONLY boot configuration (see Boot sequence
-        issues)
-    - [x] reconfigure rpi4 `BOOT_SEQUENCE`
-    - [ ] investigate whether `config.txt` should be copied to UEFI from Talos partition?
-  - [x] prepare & boot Talos installer USB disk
-  - [x] bootstraping cluster
 - [x] securely store sensitive data/configuration using `pass`:
   - [x] read/write/sync using `talos-pass`
-  - [x] `/state/` directory using `talos-pass-sync`
 - [x] figure out update/upgrade/reconfiguration procedures:
-  - [x] reconfigure nodes using `talos-apply`
-  - [x] upgrade (Talos) nodes using `talos-upgrade`
+  - [x] reconfigure nodes using `talos-node-apply`
+  - [x] upgrade (Talos) nodes using `talos-node-upgrade`
   - [x] use Image Factory to customize Talos images using `talos-image`
   - [x] add ZFS system extension
-  - [ ] pin Kubernetes version to upgrade separately from Talos
+  - [x] pin Kubernetes version to upgrade separately from Talos
 - [x] set up ZFS on LUKS on the 1TB drive for local storage
   - [x] make those accessible with [OpenEBS local storage](https://openebs.io/docs/concepts/data-engines/localstorage) engine
 - [x] access from anywhere with Netbird
 - [x] run arbitrary Nix tooling within the cluster
-  - see `talos-nix-disks` or `nix-system/nix-disks` daemonset configuration
+  - see `k8s-nix-disks` or `nix-system/nix-disks` daemonset configuration
   - [ ] put container gcroots (maybe profiles?) into subdirectories on host
   - [ ] write some controller/operator to inject Nix configs into Pod automatically?
 - [ ] resolve `*.pic.kdn.im` DNS names
+- [ ] check whether 4x2.5GbE ethernets could be bonded into 10GbE
 - [x] set up Rook/Ceph
   - [x] set up CephCluster on RPi4s
   - [ ] set up first disk pools
@@ -100,6 +98,16 @@ Runs on 3x Raspberry Pi 4 4GB, each holding:
   - [ ] HDDs: long term backups
 - [ ] run Nextcloud?
 - [ ] offline-synced backup solution?
+
+### RPi4 scope
+
+- [x] set up Talos on multi-disk Raspberry Pi 4:
+  - [x] [RPi4 UEFI-boot](https://github.com/pftf/RPi4) SD card having ONLY boot configuration (see Boot sequence
+        issues)
+    - [x] reconfigure rpi4 `BOOT_SEQUENCE`
+    - [ ] investigate whether `config.txt` should be copied to UEFI from Talos partition?
+  - [x] prepare & boot Talos installer USB disk
+  - [x] bootstraping cluster
 
 # First time setup
 
@@ -163,7 +171,7 @@ and `sudo nix run 'nixpkgs#rpi-imager'`.
 - set up DNS name on `drek` (router)
 - add entry to `config.json`
 
-7. it should be possible to run `talos-apply` on the controlplane node
+7. it should be possible to run `talos-node-apply` on the controlplane node
 
 ### Rasbperry Pi 4 boot sequence issues
 
@@ -196,7 +204,7 @@ Updating/upgrading/debugging.
 
 ```shell
 kubectl apply -k k8s/nix-system
-talos-nix-disks rant
+k8s-nix-disks rant
 ```
 
 ### Talos disk identification
@@ -258,15 +266,15 @@ hurl.lan.   /dev/sde       P210 2048GB       -            HDD    -      -       
 ## updating machine config
 
 ```shell
-talos-apply --dry-run hurl
-talos-apply hurl
+talos-node-apply --dry-run hurl
+talos-node-apply hurl
 ```
 
 ## checking machine config drift
 
 ```shell
-talos-apply --dry-run '*'
-talos-apply --check
+talos-node-apply --dry-run '*'
+talos-node-apply --check
 ```
 
 ## upgrading install image (extensions etc.)
@@ -274,10 +282,10 @@ talos-apply --check
 this command will update to latest configured
 
 ```shell
-talos-upgrade hurl
+talos-node-upgrade hurl
 ```
 
-might need to run `talos-apply hurl` after reboot to load the ZFS kernel module before the boot finishes
+might need to run `talos-node-apply hurl` after reboot to load the ZFS kernel module before the boot finishes
 
 debug system messages with `talosctl-node hurl dmesg --follow`
 

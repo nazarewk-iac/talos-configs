@@ -51,8 +51,8 @@ handle_drive() {
     candidate="${empties[0]}"
     log "${name}" "WARNING: you need to format the drive manually: ${candidate}"
     log "${name}" "  you can do that manually with:"
-    log "${name}" "    talos-nix-disks ${K8S_NODE_NAME:-"<NODE_NAME>"} disks-run ${name} disko --mode format --dry-run"
-    log "${name}" "    talos-nix-disks ${K8S_NODE_NAME:-"<NODE_NAME>"} disks-run ${name} disko --mode format "
+    log "${name}" "    k8s-nix-disks ${K8S_NODE_NAME:-"<NODE_NAME>"} disks-run ${name} disko --mode format --dry-run"
+    log "${name}" "    k8s-nix-disks ${K8S_NODE_NAME:-"<NODE_NAME>"} disks-run ${name} disko --mode format "
     return 1
   else
     candidate="${formatted[0]}"

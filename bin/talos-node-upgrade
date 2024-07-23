@@ -5,4 +5,4 @@ test -n "${PRJ_ROOT:-}" || eval "$(cd "${BASH_SOURCE[0]%/*}" && direnv export ba
 
 node="$1"
 shift
-talosctl-node "${node}" upgrade --image "$(talos-image "${node}" upgrade)" "$@"
+talosctl-node "${node}" upgrade --image "$(talos-image-url "${node}" upgrade)" "$@"
