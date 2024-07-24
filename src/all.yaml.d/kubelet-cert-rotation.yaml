@@ -1,0 +1,5 @@
+machine:
+  kubelet:
+    extraConfig:
+      # requires /k8s/00-2-cert-approver
+      serverTLSBootstrap: true

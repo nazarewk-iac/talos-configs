@@ -5,31 +5,24 @@
 }: let
   src = ./.;
   configs = {
-    #hurl-local = {
-    #  zpool.name = "pic-local";
-    #  lsblk = lsblk.crucialBX5001TBThroughBay;
-    #  luks.uuid = "6e1fb50e-adab-4cdd-96f8-b0f698c29a4f";
-    #  disko = "${./local-storage.disko.lib.nix}";
-    #};
-    #jhal-local = {
-    #  zpool.name = "pic-local";
-    #  lsblk = lsblk.crucialBX5001TBThroughBay;
-    #  luks.uuid = "f96cf5d6-bf04-4897-87c4-fc8f13585fb7";
-    #  disko = "${./local-storage.disko.lib.nix}";
-    #};
-    #rant-local = {
-    #  zpool.name = "pic-local";
-    #  lsblk = lsblk.crucialBX5001TBThroughBay;
-    #  luks.uuid = "5d43c8c0-ad3e-4165-bb1a-ea8a4fdadf45";
-    #  disko = "${./local-storage.disko.lib.nix}";
-    #};
-  };
-
-  lsblk.crucialBX5001TBThroughBay = {
-    model = "500SSD1         ";
-    rev = "0520";
-    size = "931.5G";
-    vendor = "CT1000BX";
+    pwet-local = {
+      zpool.name = "pic-local";
+      lsblk.serial = "S676NL0W685078      ";
+      luks.uuid = "25d5770e-0e58-41c9-b775-0f1e38fb4af9";
+      disko = "${./local-storage.disko.lib.nix}";
+    };
+    turo-local = {
+      zpool.name = "pic-local";
+      lsblk.serial = "S676NL0W685083      ";
+      luks.uuid = "9befac86-93ff-4cd0-a4f2-705855295654";
+      disko = "${./local-storage.disko.lib.nix}";
+    };
+    yost-local = {
+      zpool.name = "pic-local";
+      lsblk.serial = "S676NL0W685081      ";
+      luks.uuid = "48a8eb87-d273-40ab-ae63-f7e97a9ab5e9";
+      disko = "${./local-storage.disko.lib.nix}";
+    };
   };
 
   mkScript = args:

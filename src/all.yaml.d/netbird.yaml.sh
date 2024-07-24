@@ -6,4 +6,32 @@ cd "${BASH_SOURCE[0]%/*}"
 
 setup_key="$(talos-pass read "netbird-setup-key")"
 export setup_key
-gojq --yaml-input --yaml-output 'walk(if type == "object" and .name? and .name == "NB_SETUP_KEY" then .value |= env.setup_key end)' <.netbird.yaml
+gojq --yaml-output --null-input '{ cluster: { inlineManifests: [{
+  name: "netbird-namespace",
+  contents: ({
+    "apiVersion": "v1",
+    "kind": "Namespace",
+    "metadata": {
+      "name": "netbird-system",
+      "labels": {
+        "pod-security.kubernetes.io/audit": "privileged",
+        "pod-security.kubernetes.io/enforce": "privileged",
+        "pod-security.kubernetes.io/warn": "privileged"
+      }
+    }
+  } | tojson)
+}, {
+  name: "netbird-secrets",
+  contents: ({
+    "apiVersion": "v1",
+    "kind": "Secret",
+    "metadata": {
+      "name": "netbird-env",
+      "namespace": "netbird-system"
+    },
+    "type": "Opaque",
+    "stringData": {
+      "NB_SETUP_KEY": env.setup_key
+    }
+  } | tojson)
+}]}}'

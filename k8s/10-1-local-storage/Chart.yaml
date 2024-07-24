@@ -1,6 +1,6 @@
 apiVersion: v2
-name: local-storage
-version: &version 4.0.1
+name: 10-1-local-storage
+version: &version 4.1.0
 appVersion: *version
 dependencies:
   - name: openebs

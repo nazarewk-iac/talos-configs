@@ -1,7 +1,7 @@
 apiVersion: v2
-name: network-storage
-version: 0.0.0
+name: 15-1-network-storage
+version: &version 1.14.8
 dependencies:
   - name: rook-ceph-cluster
     repository: https://charts.rook.io/release
-    version: 1.14.8
+    version: *version

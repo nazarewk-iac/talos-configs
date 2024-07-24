@@ -1,4 +1,9 @@
 openebs:
+  openebs-crds:
+    csi:
+      volumeSnapshots:
+        enabled: false # installed separately
+        keep: false # installed separately
   engines:
     local:
       lvm:

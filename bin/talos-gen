@@ -79,6 +79,7 @@ main() {
 
   secrets="$(talos-gen-configs -- secrets.yaml)"
   cluster_domain="$(talos-cfg -r '.cluster.domain')"
+  cluster_vip="$(talos-cfg -r '.cluster.vip')"
 
   default_endpoint="${default_endpoint:-"$(talos-cfg -r ".nodes | to_entries[0].value | .links[.lan.link].ipv4")"}"
 
@@ -142,12 +143,15 @@ main() {
   log "running nodes:"
   log " - %s" "${running_nodes[@]}"
 
-  vip="$(talos-cfg -r '.cluster.vip')"
-  export vip
   kubernetes_endpoint="https://${endpoints[0]}:6443"
-  for ip in "${endpoints[@]}"; do
+  for ip in "${cluster_vip}" "${endpoints[@]}"; do
     if can_connect "${ip}" 6443 &>/dev/null; then
-      kubernetes_endpoint="https://${ip}:6443"
+      if [[ ${ip} == *:* ]]; then
+        # IPv6
+        kubernetes_endpoint="https://[${ip}]:6443"
+      else
+        kubernetes_endpoint="https://${ip}:6443"
+      fi
       break
     fi
   done
@@ -177,11 +181,15 @@ main() {
     gen_node "${node}"
   done
 
-  for node in "${running_nodes[@]}"; do
-    if talosctl --nodes "${node}" kubeconfig --force; then
-      break
-    fi
-  done
+  if test -f "${KUBECONFIG}"; then
+    log "Skipping KUBECONFIG, because it exists."
+  else
+    for node in "${running_nodes[@]}"; do
+      if talosctl-node "${node}" kubeconfig --force; then
+        break
+      fi
+    done
+  fi
 }
 
 main "$@" |& maybe_redirect

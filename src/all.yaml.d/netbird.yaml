@@ -1,0 +1,10 @@
+machine:
+  kubelet:
+    extraMounts:
+      - destination: /var/lib/netbird
+        type: bind
+        source: /var/lib/netbird
+        options:
+          - bind
+          - rshared
+          - rw

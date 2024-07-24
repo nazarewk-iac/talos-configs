@@ -1,7 +1,7 @@
 apiVersion: v1
 kind: PersistentVolume
 metadata:
-  name: hdd-ironwolf-pro-4tb-1
+  name: hdd-ironwolf-pro-4tb-2
   labels:
     storage.kdn.im/device-class: hdd
   annotations:
@@ -16,7 +16,7 @@ spec:
   persistentVolumeReclaimPolicy: Retain
   volumeMode: Block
   local:
-    path: /dev/disk/by-id/wwn-0x5000c500ecc2f1e3
+    path: /dev/disk/by-id/wwn-0x5000c500c0297738
   nodeAffinity:
     required:
       nodeSelectorTerms:
@@ -24,4 +24,4 @@ spec:
             - key: kubernetes.io/hostname
               operator: In
               values:
-                - turo
+                - yost

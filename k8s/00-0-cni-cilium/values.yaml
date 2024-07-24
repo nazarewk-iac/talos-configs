@@ -1,0 +1,60 @@
+cilium:
+  ipv4:
+    enabled: true
+  ipv6:
+    enabled: true
+
+  k8sServiceHost: "fd31:e17c:f07f:1::5"
+  k8sServicePort: 6443
+
+  k8s:
+    requireIPv4PodCIDR: true
+    requireIPv6PodCIDR: true
+
+  cluster:
+    name: pic
+    id: 41
+
+  ipam:
+    mode: kubernetes
+  kubeProxyReplacement: true
+
+  securityContext:
+    capabilities:
+      ciliumAgent:
+        - CHOWN
+        - KILL
+        - NET_ADMIN
+        - NET_RAW
+        - IPC_LOCK
+        - SYS_ADMIN
+        - SYS_RESOURCE
+        - DAC_OVERRIDE
+        - FOWNER
+        - SETGID
+        - SETUID
+      cleanCiliumState:
+        - NET_ADMIN
+        - SYS_ADMIN
+        - SYS_RESOURCE
+
+  cgroup:
+    automount:
+      enabled: false
+    hostRoot: /sys/fs/cgroup
+
+  operator:
+    replicas: 1
+    rollOutPods: true
+
+  externalIPs:
+    enabled: true
+  nodePort:
+    enabled: true
+  hostPort:
+    enabled: true
+
+  hubble:
+    enabled: &hubble-enabled false
+    relay:
+      enabled: *hubble-enabled

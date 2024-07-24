@@ -7,7 +7,8 @@
   },
   "cluster": {
     "name": "pic",
-    "domain": "pic.kdn.im"
+    "domain": "pic.kdn.im",
+    "vip": "fd31:e17c:f07f:1::5"
   },
   "nodes": {
     "pwet": {
@@ -26,13 +27,16 @@
       },
       "links": {
         "enp2s0": {
-          "mac": "A8:B8:E0:04:10:B5"
+          "mac": "A8:B8:E0:04:10:B5",
+          "ipv6": "fd31:e17c:f07f:1:aab8:e0ff:fe04:10b5"
         },
         "enp3s0": {
-          "mac": "A8:B8:E0:04:10:B6"
+          "mac": "A8:B8:E0:04:10:B6",
+          "ipv6": "fd31:e17c:f07f:1:aab8:e0ff:fe04:10b6"
         },
         "enp4s0": {
-          "mac": "A8:B8:E0:04:10:B7"
+          "mac": "A8:B8:E0:04:10:B7",
+          "ipv6": "fd31:e17c:f07f:1:aab8:e0ff:fe04:10b7"
         },
         "enp5s0": {
           "mac": "A8:B8:E0:04:10:B8",
@@ -42,7 +46,7 @@
       }
     },
     "turo": {
-      "enable": false,
+      "enable": true,
       "type": "controlplane",
       "image": {
         "type": "iso",
@@ -62,18 +66,21 @@
           "ipv6": "fd31:e17c:f07f:1:aab8:e0ff:fe04:130d"
         },
         "enp3s0": {
-          "mac": "A8:B8:E0:04:13:0E"
+          "mac": "A8:B8:E0:04:13:0E",
+          "ipv6": "fd31:e17c:f07f:1:aab8:e0ff:fe04:130e"
         },
         "enp4s0": {
-          "mac": "A8:B8:E0:04:13:0F"
+          "mac": "A8:B8:E0:04:13:0F",
+          "ipv6": "fd31:e17c:f07f:1:aab8:e0ff:fe04:130f"
         },
         "enp5s0": {
-          "mac": "A8:B8:E0:04:13:10"
+          "mac": "A8:B8:E0:04:13:10",
+          "ipv6": "fd31:e17c:f07f:1:aab8:e0ff:fe04:1310"
         }
       }
     },
     "yost": {
-      "enable": false,
+      "enable": true,
       "type": "controlplane",
       "image": {
         "type": "iso",
@@ -88,18 +95,21 @@
       },
       "links": {
         "enp2s0": {
-          "mac": "",
-          "ipv4": "",
-          "ipv6": ""
+          "mac": "A8:B8:E0:04:12:F1",
+          "ipv4": "192.168.177",
+          "ipv6": "fd31:e17c:f07f:1:aab8:e0ff:fe04:12f1"
         },
         "enp3s0": {
-          "mac": ""
+          "mac": "A8:B8:E0:04:12:F2",
+          "ipv6": "fd31:e17c:f07f:1:aab8:e0ff:fe04:12f2"
         },
         "enp4s0": {
-          "mac": ""
+          "mac": "A8:B8:E0:04:12:F3",
+          "ipv6": "fd31:e17c:f07f:1:aab8:e0ff:fe04:12f3"
         },
         "enp5s0": {
-          "mac": ""
+          "mac": "A8:B8:E0:04:12:F4",
+          "ipv6": "fd31:e17c:f07f:1:aab8:e0ff:fe04:12f4"
         }
       }
     },

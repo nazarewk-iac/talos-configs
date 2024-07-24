@@ -1,0 +1,11 @@
+apiVersion: v2
+name: 00-0-cni-cilium
+version: &version 1.16.0
+appVersion: *version
+dependencies:
+  - name: cilium
+    repository: https://helm.cilium.io
+    version: *version
+
+sources:
+  - https://github.com/cilium/charts

@@ -4,5 +4,4 @@ test -z "${DEBUG:-}" || set -x
 test -n "${PRJ_ROOT:-}" || eval "$(cd "${BASH_SOURCE[0]%/*}" && direnv export bash)"
 
 addr="$(name="$1" talos-cfg -r '.nodes[env.name] | .links[.lan.link].ipv6')"
-addr="${1}"
 talosctl --nodes "${addr}" "${@:2}"

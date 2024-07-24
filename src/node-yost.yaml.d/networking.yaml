@@ -2,11 +2,11 @@ machine:
   network:
     interfaces:
       - deviceSelector:
-          hardwareAddr: "a8:b8:e0:04:13:0d"
+          hardwareAddr: "a8:b8:e0:04:12:f1"
         dhcp: true
         dhcpOptions:
           ipv4: true
           ipv6: true
-          duidv6: "e5d81626600c43ffa4d9af30bb4dd07a"
+          duidv6: "99155f69dee348718de534d4bfec47e6"
         vip:
           ip: "fd31:e17c:f07f:1::5"

@@ -2,4 +2,4 @@
 set -eEuo pipefail
 test -z "${DEBUG:-}" || set -x
 
-. k8s-helm "rook-system" "rook-ceph-cluster" "$@"
+. k8s-helm "kube-system" "cilium" "$@"

@@ -44,6 +44,7 @@ handle_drive() {
     ret=1
   elif test "${#candidates[@]}" -eq 0; then
     log "${name}" "INFO: did not find any devices"
+    ret=0
   fi
   test -z "${ret}" || return "${ret}"
 
@@ -54,9 +55,12 @@ handle_drive() {
     log "${name}" "    k8s-nix-disks ${K8S_NODE_NAME:-"<NODE_NAME>"} disks-run ${name} disko --mode format --dry-run"
     log "${name}" "    k8s-nix-disks ${K8S_NODE_NAME:-"<NODE_NAME>"} disks-run ${name} disko --mode format "
     return 1
-  else
+  elif test "${#formatted[@]}" -gt 0; then
     candidate="${formatted[0]}"
     log "${name}" "INFO: will mount: ${candidate}"
+  else
+    log "${name}" "ERROR: did not find any candidate"
+    return 0
   fi
   disks-run "${name}" disko "${candidate}" --mode mount
 }

@@ -42,8 +42,7 @@ It is running dual-stack (both LAN and WAN) on a mix of 10/2.5/1 GbE (mostly man
 
 Runs on 3x self-built Mini ITX NAS boxes, each consisting of:
 
-- [SzBox N100 mobo](https://www.amazon.pl/dp/B0CQ4PX7WX):
-  - seems to be searchable under `CWWK N100`
+- [SzBox N100 mobo](https://www.amazon.pl/dp/B0CQ4PX7WX) aka `CWWK N100`:
   - 4x 2.5GbE ethernet
   - 2x NVMe connectors
   - 6x SATA connectors
@@ -75,7 +74,7 @@ Runs on 3x Raspberry Pi 4 4GB, each holding:
 - [x] securely store sensitive data/configuration using `pass`:
   - [x] read/write/sync using `talos-pass`
 - [x] dual-stack (IPv4 + IPv6)
-- [ ] use Cilium CNI
+- [x] use Cilium CNI
 - [x] figure out update/upgrade/reconfiguration procedures:
   - [x] reconfigure nodes using `talos-node-apply`
   - [x] upgrade (Talos) nodes using `talos-node-upgrade`
@@ -92,8 +91,10 @@ Runs on 3x Raspberry Pi 4 4GB, each holding:
 - [ ] resolve `*.pic.kdn.im` DNS names
 - [ ] check whether 4x2.5GbE ethernets could be bonded into 10GbE
 - [x] set up Rook/Ceph
-  - [x] set up CephCluster on RPi4s
+  - [x] FAILED: set up CephCluster on RPi4s
+  - [ ] set up CephCluster on `CWWK N100`s
   - [ ] set up first disk pools
+    - TODO: determine which disks (there are just 2 out of 6 OSDs) were added and why only those
 - [ ] separate Ceph configurations for:
   - [ ] SSDs: replicated frequent/lower latency access
   - [ ] HDDs: infrequent/large files access
@@ -120,6 +121,8 @@ Based on following materials:
 
 ## Preparing CWWK N100
 
+CWWK N100 setup checklist:
+
 - [ ] boot the Talos Installer SecureBoot ISO & select `Enroll Secure Boot keys: auto` from boot menu
 - [ ] reboot into Talos Installer ISO, note down the IP or get it from router `fd31:e17c:f07f:1:aab8:e0ff:fe04:130d`
 - [ ] set up `hostname.yaml`
@@ -130,7 +133,8 @@ Based on following materials:
   - `talosctl -n fd31:e17c:f07f:1:aab8:e0ff:fe04:130d get addresses --insecure`
 - [ ] fill in all network interfaces:
   - `talosctl -n fd31:e17c:f07f:1:aab8:e0ff:fe04:130d get link --insecure`
-- run `talos-gen`
+- [ ] `enable: true` in `config.json`
+- [ ] run `talos-gen`
 - [ ] apply node config:
   - `talos-node-apply --insecure turo`
 
@@ -208,6 +212,19 @@ RPi4 UEFI has those characteristics:
 - for some reason it very often tries 4 netboots (HTTP/iPXE + IPv4/IPv6) for a few minutes delay before finally getting
   to the local USB boot
 
+## Preparing a new Kubernetes node
+
+- [ ] prepare a Talos node (see above)
+- [ ] locate a `*-local` device and put it into `/k8s/05-1-nix-disks/nix/disks.nix`:
+  - `talosctl disks` - quickly identify the disk
+  - `k8s-nix-disks yost lsblk -OJ | jq '.blockdevices' | gron` - locate `lsblk` parameters
+  - `uuidgen` to create new LUKS UUID
+- [ ] set up `/src/node*.yaml.d/local-storage.yaml` with `zpool.storage.kdn.im/pic-local` label
+  - [ ] `talos-gen` & `talos-node-apply`
+- [ ] add the disks meant for Ceph to `/k8s/15-1-network-storage/templates`:
+  - `k8s-nix-disks pwet ls -la /dev/disk/by-id`
+  - `k8s-nix-disks pwet lsblk -b --output SIZE -n -d /dev/disk/by-id/wwn-0x500a0751e8764b59`
+
 # Day two operations
 
 Updating/upgrading/debugging.
@@ -227,7 +244,7 @@ k8s-nix-disks rant
 
 ### Talos disk identification
 
-In `talos disks` (actual inputs for cluster configs) USB adapters identify as the same device without meaningful difference between those.
+In `talosctl disks` (actual inputs for cluster configs) USB adapters identify as the same device without meaningful difference between those.
 
 After (probably) `udev` service is up you can list all disks and symlinks by `talosctl list /dev/disk/by-id --long`.
 

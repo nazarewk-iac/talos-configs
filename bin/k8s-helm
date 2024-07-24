@@ -50,6 +50,9 @@ fi
 test -z "${cmd}" || cmds=("${cmd}")
 
 case "${cmd}" in
+uninstall)
+  args+=("${release}")
+;;
 template | install | upgrade | diff)
   args+=("${release}" "${chart}")
   shopt -s nullglob
@@ -80,8 +83,9 @@ if ! test -d charts || ! test -e Chart.lock; then
 fi
 
 if test "${cmd}" == "upgrade"; then
+  # `--dry-run=server` comes from https://github.com/databus23/helm-diff/issues/622#issuecomment-2139320642
   # --detailed-exitcode
-  helm diff "${cmds[@]}" "${args[@]}"
+  helm diff "${cmds[@]}" --dry-run=server "${args[@]}"
 fi
 
 helm "${cmds[@]}" "${cmd_only_args[@]}" "${args[@]}"

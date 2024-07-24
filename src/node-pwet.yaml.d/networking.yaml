@@ -8,3 +8,5 @@ machine:
           ipv4: true
           ipv6: true
           duidv6: "2f20675fe58848c5bdf33d74057a1ee0"
+        vip:
+          ip: "fd31:e17c:f07f:1::5"

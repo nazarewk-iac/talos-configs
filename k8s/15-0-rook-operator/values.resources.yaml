@@ -1,0 +1,228 @@
+# Lower the most hungry resources to fit into RPi4
+rook-ceph:
+  # Deployment:rook-ceph-operator
+  resources:
+    limits:
+      #memory: 512Mi
+      memory: 512Mi
+    requests:
+      #cpu: 200m
+      cpu: 20m
+      #memory: 128Mi
+      memory: 128Mi
+  # see https://github.com/rook/rook/blob/0837c15b86c4d836c486aca03ca3e586f78c5dfb/deploy/charts/rook-ceph/values.yaml#L222-L409
+  csi:
+    # -- CEPH CSI RBD provisioner resource requirement list
+    # csi-omap-generator resources will be applied only if `enableOMAPGenerator` is set to `true`
+    # @default -- see values.yaml
+    csiRBDProvisionerResource: |
+      - name : csi-provisioner
+        resource:
+          requests:
+            memory: 128Mi
+            #cpu: 100m
+            cpu: 10m
+          limits:
+            memory: 256Mi
+      - name : csi-resizer
+        resource:
+          requests:
+            memory: 128Mi
+            #cpu: 100m
+            cpu: 10m
+          limits:
+            memory: 256Mi
+      - name : csi-attacher
+        resource:
+          requests:
+            memory: 128Mi
+            #cpu: 100m
+            cpu: 10m
+          limits:
+            memory: 256Mi
+      - name : csi-snapshotter
+        resource:
+          requests:
+            memory: 128Mi
+            #cpu: 100m
+            cpu: 10m
+          limits:
+            memory: 256Mi
+      - name : csi-rbdplugin
+        resource:
+          requests:
+            memory: 512Mi
+          limits:
+            memory: 1Gi
+      - name : csi-omap-generator
+        resource:
+          requests:
+            memory: 512Mi
+            #cpu: 250m
+            cpu: 25m
+          limits:
+            memory: 1Gi
+      - name : liveness-prometheus
+        resource:
+          requests:
+            memory: 128Mi
+            #cpu: 50m
+            cpu: 5m
+          limits:
+            memory: 256Mi
+
+    # -- CEPH CSI RBD plugin resource requirement list
+    # @default -- see values.yaml
+    csiRBDPluginResource: |
+      - name : driver-registrar
+        resource:
+          requests:
+            memory: 128Mi
+            #cpu: 50m
+            cpu: 5m
+          limits:
+            memory: 256Mi
+      - name : csi-rbdplugin
+        resource:
+          requests:
+            memory: 512Mi
+            #cpu: 250m
+            cpu: 25m
+          limits:
+            memory: 1Gi
+      - name : liveness-prometheus
+        resource:
+          requests:
+            memory: 128Mi
+            #cpu: 50m
+            cpu: 5m
+          limits:
+            memory: 256Mi
+
+    # -- CEPH CSI CephFS provisioner resource requirement list
+    # @default -- see values.yaml
+    csiCephFSProvisionerResource: |
+      - name : csi-provisioner
+        resource:
+          requests:
+            memory: 128Mi
+            #cpu: 100m
+            cpu: 10m
+          limits:
+            memory: 256Mi
+      - name : csi-resizer
+        resource:
+          requests:
+            memory: 128Mi
+            #cpu: 100m
+            cpu: 10m
+          limits:
+            memory: 256Mi
+      - name : csi-attacher
+        resource:
+          requests:
+            memory: 128Mi
+            #cpu: 100m
+            cpu: 10m
+          limits:
+            memory: 256Mi
+      - name : csi-snapshotter
+        resource:
+          requests:
+            memory: 128Mi
+            #cpu: 100m
+            cpu: 10m
+          limits:
+            memory: 256Mi
+      - name : csi-cephfsplugin
+        resource:
+          requests:
+            memory: 512Mi
+            #cpu: 250m
+            cpu: 25m
+          limits:
+            memory: 1Gi
+      - name : liveness-prometheus
+        resource:
+          requests:
+            memory: 128Mi
+            #cpu: 50m
+            cpu: 5m
+          limits:
+            memory: 256Mi
+
+    # -- CEPH CSI CephFS plugin resource requirement list
+    # @default -- see values.yaml
+    csiCephFSPluginResource: |
+      - name : driver-registrar
+        resource:
+          requests:
+            memory: 128Mi
+            #cpu: 50m
+            cpu: 5m
+          limits:
+            memory: 256Mi
+      - name : csi-cephfsplugin
+        resource:
+          requests:
+            memory: 512Mi
+            #cpu: 250m
+            cpu: 25m
+          limits:
+            memory: 1Gi
+      - name : liveness-prometheus
+        resource:
+          requests:
+            memory: 128Mi
+            #cpu: 50m
+            cpu: 5m
+          limits:
+            memory: 256Mi
+
+    # -- CEPH CSI NFS provisioner resource requirement list
+    # @default -- see values.yaml
+    csiNFSProvisionerResource: |
+      - name : csi-provisioner
+        resource:
+          requests:
+            memory: 128Mi
+            #cpu: 100m
+            cpu: 10m
+          limits:
+            memory: 256Mi
+      - name : csi-nfsplugin
+        resource:
+          requests:
+            memory: 512Mi
+            #cpu: 250m
+            cpu: 25m
+          limits:
+            memory: 1Gi
+      - name : csi-attacher
+        resource:
+          requests:
+            memory: 512Mi
+            #cpu: 250m
+            cpu: 25m
+          limits:
+            memory: 1Gi
+
+    # -- CEPH CSI NFS plugin resource requirement list
+    # @default -- see values.yaml
+    csiNFSPluginResource: |
+      - name : driver-registrar
+        resource:
+          requests:
+            memory: 128Mi
+            #cpu: 50m
+            cpu: 5m
+          limits:
+            memory: 256Mi
+      - name : csi-nfsplugin
+        resource:
+          requests:
+            memory: 512Mi
+            #cpu: 250m
+            cpu: 25m
+          limits:
+            memory: 1Gi

@@ -78,6 +78,8 @@
             util-linux
             jq
             vim
+            gron
+            gojq
           ];
           commands = lib.attrsets.mapAttrsToList (n: package: {inherit package;}) bin;
         };

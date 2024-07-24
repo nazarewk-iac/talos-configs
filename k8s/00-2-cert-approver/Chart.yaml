@@ -1,0 +1,11 @@
+apiVersion: v2
+name: 00-2-cert-approver
+version: &version 1.2.2
+appVersion: *version
+dependencies:
+  - name: kubelet-csr-approver
+    repository: https://postfinance.github.io/kubelet-csr-approver
+    version: *version
+
+sources:
+  - https://github.com/postfinance/kubelet-csr-approver

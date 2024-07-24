@@ -1,0 +1,49 @@
+apiVersion: apps/v1
+kind: DaemonSet
+metadata:
+  name: netbird
+  namespace: netbird-system
+  labels:
+    app.kubernetes.io/name: netbird
+    app.kubernetes.io/component: netbird-client
+spec:
+  updateStrategy:
+    rollingUpdate:
+      maxUnavailable: "90%"
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: netbird
+      app.kubernetes.io/component: netbird-client
+  template:
+    metadata:
+      labels:
+        app.kubernetes.io/name: netbird
+        app.kubernetes.io/component: netbird-client
+    spec:
+      containers:
+        - name: netbird
+          image: netbirdio/netbird:0.28.6
+          envFrom:
+            - secretRef:
+                name: netbird-env
+          env:
+            - name: NB_HOSTNAME
+              valueFrom:
+                fieldRef:
+                  fieldPath: spec.nodeName
+            - name: NB_LOG_LEVEL
+              value: "info"
+          securityContext:
+            capabilities:
+              add:
+                - NET_ADMIN
+                - SYS_RESOURCE
+                - SYS_ADMIN
+          volumeMounts:
+            - name: host-netbird
+              mountPath: /etc/netbird
+              subPath: etc
+      volumes:
+        - name: host-netbird
+          hostPath:
+            path: /var/lib/netbird

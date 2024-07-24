@@ -1,0 +1,7 @@
+resources:
+  - daemonset.yaml
+
+images:
+  - name: docker.io/netbirdio/netbird
+    newTag: 0.28.6
+

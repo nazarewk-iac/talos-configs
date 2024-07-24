@@ -2,4 +2,4 @@
 set -eEuo pipefail
 test -z "${DEBUG:-}" || set -x
 
-. talos-helm "openebs-system" "openebs" "$@"
+. k8s-helm "kube-system" "kubelet-csr-approver" "$@"
