@@ -41,7 +41,8 @@ clean_node() {
   done
 }
 expected_date="$(date -u '+%Y-%m-%d %H:%M')"
-test "${CONFIRM_DATE:-}" == "${expected_date}" || {
+: "${CONFIRM_DATE:=""}"
+test "${CONFIRM_DATE}" == "${expected_date}" || {
   echo "\$CONFIRM_DATE='${CONFIRM_DATE}' doesn't match '${expected_date}', rerun with:"
   echo "CONFIRM_DATE='${expected_date}' $0 $*"
   exit 1
