@@ -1,0 +1,136 @@
+_default:
+  cephBlockPools:
+    spec: &bpSpec
+      failureDomain: host
+      replicated:
+        size: 3
+    storageClass: &bpSC
+      enabled: true
+      isDefault: false
+      allowVolumeExpansion: true
+      reclaimPolicy: Delete
+      # parameters copied from https://github.com/rook/rook/blob/3c522dbd351b8989d2e0b9f21b1f366e521d5ac8/deploy/charts/rook-ceph-cluster/values.yaml#L469-L503
+      parameters: &bpSCParameters
+        # (optional) mapOptions is a comma-separated list of map options.
+        # For krbd options refer
+        # https://docs.ceph.com/docs/master/man/8/rbd/#kernel-rbd-krbd-options
+        # For nbd options refer
+        # https://docs.ceph.com/docs/master/man/8/rbd-nbd/#options
+        # mapOptions: lock_on_read,queue_depth=1024
+
+        # (optional) unmapOptions is a comma-separated list of unmap options.
+        # For krbd options refer
+        # https://docs.ceph.com/docs/master/man/8/rbd/#kernel-rbd-krbd-options
+        # For nbd options refer
+        # https://docs.ceph.com/docs/master/man/8/rbd-nbd/#options
+        # unmapOptions: force
+
+        # RBD image format. Defaults to "2".
+        imageFormat: "2"
+        # RBD image features. Available for imageFormat: "2". CSI RBD currently supports only `layering` feature.
+        imageFeatures: layering
+        # The secrets contain Ceph admin credentials.
+        # WARNING: below 2 are required for provisioning PVCs
+        csi.storage.k8s.io/provisioner-secret-name: rook-csi-rbd-provisioner
+        csi.storage.k8s.io/provisioner-secret-namespace: rook-ceph
+        # WARNING: below 2 are required for resizing PVCs
+        csi.storage.k8s.io/controller-expand-secret-name: rook-csi-rbd-provisioner
+        csi.storage.k8s.io/controller-expand-secret-namespace: rook-ceph
+        # WARNING: below 2 are required for... don't know what?
+        csi.storage.k8s.io/node-stage-secret-name: rook-csi-rbd-node
+        csi.storage.k8s.io/node-stage-secret-namespace: rook-ceph
+        # Specify the filesystem type of the volume. If not specified, csi-provisioner
+        # will set default as `ext4`. Note that `xfs` is not recommended due to potential deadlock
+        # in hyperconverged settings where the volume is mounted on the same node as the osds.
+        csi.storage.k8s.io/fstype: ext4
+
+rook-ceph-cluster:
+  operatorNamespace: rook-system
+  clusterName: pic-rook
+  toolbox:
+    enabled: true
+  monitoring:
+    enabled: false
+  dashboard:
+    enabled: true
+
+  cephClusterSpec:
+    dataDirHostPath: /var/lib/internal/rook/pic-rook
+    # temporarily remedies `op-osd: OSD X is not ok-to-stop. will try updating it again later`
+    #continueUpgradeAfterChecksEvenIfNotHealthy: true
+    #skipUpgradeChecks: true
+
+    waitTimeoutForHealthyOSDInMinutes: 10
+    network:
+      dualStack: true
+      #provider: "host"
+      #addressRanges:
+      #  public:
+      #  # NODE subnets
+      #  - fd31:e17c:f07f:1::/64 # primary ULA subnet
+      #  - 192.168.41.0/24
+      #  ## POD subnets
+      #  #- fd31:e17c:f07f:8b6d::/64 # random ULA subnet
+      #  #- 10.209.0.0/16
+      #  cluster: []
+
+    mon:
+      count: 3
+      volumeClaimTemplate:
+        spec:
+          storageClassName: zfs
+          resources:
+            requests:
+              storage: 10Gi
+
+    storage:
+      useAllNodes: true
+      useAllDevices: false
+      config:
+        osdsPerDevice: "1"
+        encryptedDevice: "true"
+      devices:
+        - # HDD: Seagate Ironwolf Pro 4TB @ pwet
+          fullpath: /dev/disk/by-id/wwn-0x5000c500e0cd37a6
+          config:
+            deviceClass: hdd
+        - # SSD: Crucial BX500 1TB @ pwet
+          fullpath: /dev/disk/by-id/wwn-0x500a0751e8764b59
+          config:
+            deviceClass: ssd
+        - # HDD: Seagate Ironwolf Pro 4TB @ turo
+          fullpath: /dev/disk/by-id/wwn-0x5000c500ecc2f1e3
+          config:
+            deviceClass: hdd
+        - # SSD: Crucial BX500 1TB @ turo
+          fullpath: /dev/disk/by-id/wwn-0x500a0751e6d95db1
+          config:
+            deviceClass: ssd
+        - # HDD: Seagate Ironwolf Pro 4TB @ yost
+          fullpath: /dev/disk/by-id/wwn-0x5000c500c0297738
+          config:
+            deviceClass: hdd
+        - # SSD: Crucial BX500 1TB @ yost
+          fullpath: /dev/disk/by-id/wwn-0x500a0751e8767e4c
+          config:
+            deviceClass: ssd
+
+  cephBlockPools:
+    - name: default-ssd
+      spec:
+        <<: *bpSpec
+        deviceClass: ssd
+      storageClass:
+        <<: *bpSC
+        name: block-ssd
+
+    - name: default-hdd
+      spec:
+        <<: *bpSpec
+        deviceClass: hdd
+      storageClass:
+        <<: *bpSC
+        name: block-hdd
+
+  cephFileSystems: []
+  cephObjectStores: []

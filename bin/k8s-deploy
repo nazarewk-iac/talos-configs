@@ -3,13 +3,24 @@ set -eEuo pipefail
 test -z "${DEBUG:-}" || set -x
 test -n "${PRJ_ROOT:-}" || eval "$(cd "${BASH_SOURCE[0]%/*}" && direnv export bash)"
 
-mapfile -t all < <(cd "${PRJ_ROOT}" && ls -1 k8s)
+search() {
+  local search_args=()
+  while test "$#" -gt 0; do
+    case "$1" in
+    *)
+      test "${#search_args[@]}" -eq 0 || search_args+=('-o')
+      search_args+=('(' -name "$1" ')')
+      ;;
+    esac
+    shift
+  done
+  test "${#search_args[@]}" -eq 0 || search_args=('(' "${search_args[@]}" ')')
 
-selected=("$@")
-if test "${1:-"*"}" == "*"; then
-  selected=("${all[@]}")
-fi
-mapfile -t selected < <(printf "%s\n" "${selected[@]}" | sort)
+  find "$PRJ_ROOT/k8s" -mindepth 1 -maxdepth 1 -type d "${search_args[@]}" -print | sort
+}
+
+mapfile -t all < <(search)
+mapfile -t selected < <(search "$@")
 shopt -s nullglob
 
 kustomize_opts=(
@@ -17,8 +28,13 @@ kustomize_opts=(
   #--enable-exec # can employ https://kubectl.docs.kubernetes.io/guides/extending_kustomize/exec_krm_functions/
 )
 
-for item in "${selected[@]}"; do
-  src="${PRJ_ROOT}/k8s/${item}"
+# TODO: make customizations deploy as helm releases?
+
+printf "Found:\n" >&2
+printf " - %s\n" "${selected[@]}" >&2
+
+for src in "${selected[@]}"; do
+  item="${src##*/}"
   if ! test -e "${src}"; then
     echo "Directory doesn't exist ${src}" >&2
   fi

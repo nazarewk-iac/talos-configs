@@ -39,8 +39,8 @@ spec:
                 sleep $((RANDOM % 3))
               done
           volumeMounts:
-            - name: host-nix-socket
-              mountPath: /nix/var/nix/daemon-socket/socket
+            - name: host-nix-socket-dir
+              mountPath: /nix/var/nix/daemon-socket
           resources:
             limits:
               memory: 16Mi
@@ -83,16 +83,14 @@ spec:
               mountPath: /etc/nix
             - name: host-nix-store
               mountPath: /nix/store
-            - name: host-nix-socket
-              mountPath: /nix/var/nix/daemon-socket/socket
-            - name: hostfs
+            - name: host-nix-socket-dir
+              mountPath: /nix/var/nix/daemon-socket
+            - name: host-dev
+              subPath: disk
+              mountPath: /dev/disk
+            - name: host
               mountPropagation: HostToContainer
-              mountPath: /hostfs
-            - name: hostfs
-              subPath: var/lib/internal
-              mountPropagation: Bidirectional
-              # `disko` uses `/mnt` prefix to mount stuff
-              mountPath: /mnt/var/lib/internal
+              mountPath: /host
           livenessProbe:
             periodSeconds: 3
             exec:
@@ -127,12 +125,17 @@ spec:
                   name: nix-files
         - name: host-nix-store
           hostPath:
+            type: Directory
             path: /var/lib/nix/store
-        - name: hostfs
+        - name: host
           hostPath:
             path: /
-        - name: host-nix-socket
+        - name: host-dev
           hostPath:
-            type: Socket
-            path: /var/lib/nix/var/nix/daemon-socket/socket
+            type: Directory
+            path: /dev
+        - name: host-nix-socket-dir
+          hostPath:
+            type: Directory
+            path: /var/lib/nix/var/nix/daemon-socket
 

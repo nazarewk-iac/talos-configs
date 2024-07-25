@@ -1,5 +1,5 @@
 apiVersion: v2
-name: 15-1-network-storage
+name: 15-1-rook-cluster
 version: &version 1.14.8
 dependencies:
   - name: rook-ceph-cluster

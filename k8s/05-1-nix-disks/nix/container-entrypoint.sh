@@ -11,7 +11,6 @@ nix_args=(
   --verbose
 )
 cp -rTL "${script_dir}/..data" "${src_dir}"
-ln -sfT /hostfs/dev/disk /dev/disk
 
 # shellcheck disable=SC2016
 if ! nix develop "${nix_args[@]}" "${src_dir}" --command bash -xc '

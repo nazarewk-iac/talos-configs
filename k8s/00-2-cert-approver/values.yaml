@@ -1,6 +1,6 @@
 kubelet-csr-approver:
   ignoreNonSystemNode: true
-  # TODO: possibly resolves something else, so it doesn't match CSR IPs
+  # TODO: probably resolves something else, because it doesn't match CSR IPs
   bypassDnsResolution: true
   allowedDnsNames: 1
   providerIpPrefixes:

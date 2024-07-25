@@ -73,13 +73,18 @@
         devshells.default = {
           packages = with pkgs; [
             cryptsetup
-            zfs_unstable
             disko
-            util-linux
-            jq
-            vim
-            gron
+            findutils
             gojq
+            gptfdisk
+            gron
+            jq
+            lsof
+            lvm2
+            parted
+            util-linux
+            vim
+            zfs_unstable
           ];
           commands = lib.attrsets.mapAttrsToList (n: package: {inherit package;}) bin;
         };

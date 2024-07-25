@@ -1,7 +1,0 @@
-kind: StorageClass
-apiVersion: storage.k8s.io/v1
-metadata:
-  name: manual-rook-ceph-cluster
-provisioner: kubernetes.io/no-provisioner
-# required so Pods are aware of the PV location
-volumeBindingMode: WaitForFirstConsumer

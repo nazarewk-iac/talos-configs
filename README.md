@@ -92,12 +92,11 @@ Runs on 3x Raspberry Pi 4 4GB, each holding:
 - [ ] check whether 4x2.5GbE ethernets could be bonded into 10GbE
 - [x] set up Rook/Ceph
   - [x] FAILED: set up CephCluster on RPi4s
-  - [ ] set up CephCluster on `CWWK N100`s
-  - [ ] set up first disk pools
-    - TODO: determine which disks (there are just 2 out of 6 OSDs) were added and why only those
-- [ ] separate Ceph configurations for:
-  - [ ] SSDs: replicated frequent/lower latency access
-  - [ ] HDDs: infrequent/large files access
+  - [x] set up CephCluster on `CWWK N100`s
+  - [x] set up first disk pools
+- [x] separate Ceph configurations for:
+  - [x] SSDs: replicated frequent/lower latency access
+  - [x] HDDs: infrequent/large files access
   - [ ] HDDs: long term backups
 - [ ] run Nextcloud?
 - [ ] offline-synced backup solution?

@@ -16,4 +16,5 @@
 !*.yaml
 !/Chart.lock
 !/helm
+!/erase.sh
 /charts/
