@@ -1,0 +1,45 @@
+{{- $root := . -}}
+{{- $Values := get .Values "rook-ceph-cluster" -}}
+{{- if $Values.cephFileSystems | empty | not }}
+
+{{- $filesystem := $Values.cephFileSystems | first | required ($Values.cephFileSystems | toPrettyJson) -}}
+{{- range $poolName := $filesystem.storageClass.pools -}}
+
+---
+
+apiVersion: storage.k8s.io/v1
+kind: StorageClass
+metadata:
+  name: {{ $filesystem.name }}-{{ $poolName }}
+{{- if $filesystem.storageClass.labels }}
+  labels:
+{{ toYaml $filesystem.storageClass.labels | indent 4 }}
+{{- end }}
+  annotations:
+    storageclass.kubernetes.io/is-default-class: "{{ if default false $filesystem.storageClass.isDefault }}true{{ else }}false{{ end }}"
+{{- if $filesystem.storageClass.annotations }}
+{{ toYaml $filesystem.storageClass.annotations | indent 4 }}
+{{- end }}
+{{- if $Values.csiDriverNamePrefix }}
+provisioner: {{ $Values.csiDriverNamePrefix }}.cephfs.csi.ceph.com
+{{- else }}
+provisioner: {{ $Values.operatorNamespace }}.cephfs.csi.ceph.com
+{{- end }}
+parameters:
+  fsName: {{ $filesystem.name }}
+  pool: {{ $filesystem.name }}-{{ $poolName }}
+  clusterID: {{ $root.Release.Namespace }}
+{{ with $filesystem.storageClass.parameters }}
+{{ tpl (toYaml .) $ | indent 2 }}
+{{ end }}
+reclaimPolicy: {{ default "Delete" $filesystem.storageClass.reclaimPolicy }}
+allowVolumeExpansion: {{ default "true" $filesystem.storageClass.allowVolumeExpansion }}
+volumeBindingMode: {{ default "Immediate" $filesystem.storageClass.volumeBindingMode }}
+{{- if $filesystem.storageClass.mountOptions }}
+mountOptions:
+  {{- range $filesystem.storageClass.mountOptions }}
+  - {{ . }}
+  {{- end }}
+{{- end }}
+{{ end }}
+{{ end }}

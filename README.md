@@ -73,8 +73,23 @@ Runs on 3x Raspberry Pi 4 4GB, each holding:
 - [x] integrate with Nix-based development environment
 - [x] securely store sensitive data/configuration using `pass`:
   - [x] read/write/sync using `talos-pass`
-- [x] dual-stack (IPv4 + IPv6)
-- [x] use Cilium CNI
+- networking:
+  - [x] dual-stack (IPv4 + IPv6)
+  - [x] use Cilium CNI
+  - [ ] make (cluster) IPv6s are accessible from LAN
+  - [x] run Netbird client
+  - expose Kubernetes controlplane:
+    - [ ] to LAN
+    - [ ] over Netbird
+    - [ ] over WAN if Netbird takes too much time
+  - expose Ceph Block Pool:
+    - [ ] to LAN
+    - [ ] over Netbird
+    - [ ] over WAN if Netbird takes too much time
+  - expose Ceph Object Storage:
+    - [ ] to LAN
+    - [ ] over Netbird
+    - [ ] over WAN if Netbird takes too much time
 - [x] figure out update/upgrade/reconfiguration procedures:
   - [x] reconfigure nodes using `talos-node-apply`
   - [x] upgrade (Talos) nodes using `talos-node-upgrade`
@@ -83,7 +98,6 @@ Runs on 3x Raspberry Pi 4 4GB, each holding:
   - [x] pin Kubernetes version to upgrade separately from Talos
 - [x] set up ZFS on LUKS on the 1TB drive for local storage
   - [x] make those accessible with [OpenEBS local storage](https://openebs.io/docs/concepts/data-engines/localstorage) engine
-- [x] access from anywhere with Netbird
 - [x] run arbitrary Nix tooling within the cluster
   - see `k8s-nix-disks` or `nix-system/nix-disks` daemonset configuration
   - [ ] put container gcroots (maybe profiles?) into subdirectories on host
@@ -93,11 +107,12 @@ Runs on 3x Raspberry Pi 4 4GB, each holding:
 - [x] set up Rook/Ceph
   - [x] FAILED: set up CephCluster on RPi4s
   - [x] set up CephCluster on `CWWK N100`s
-  - [x] set up first disk pools
-- [x] separate Ceph configurations for:
-  - [x] SSDs: replicated frequent/lower latency access
-  - [x] HDDs: infrequent/large files access
-  - [ ] HDDs: long term backups
+  - [x] set up Block Pool
+  - [x] set up Object Storage
+  - [ ] set up Filesystem (failed, see [rook-cluster](k8s/15-1-rook-cluster/README.md))
+  - separate Ceph configurations for:
+    - [x] SSDs: replicated frequent/lower latency access
+    - [x] HDDs: infrequent/large files access
 - [ ] run Nextcloud?
 - [ ] offline-synced backup solution?
 

@@ -1,48 +1,114 @@
-_default:
+_defaults:
   cephBlockPools:
-    spec: &bpSpec
-      failureDomain: host
-      replicated:
-        size: 3
-    storageClass: &bpSC
-      enabled: true
-      isDefault: false
-      allowVolumeExpansion: true
-      reclaimPolicy: Delete
-      # parameters copied from https://github.com/rook/rook/blob/3c522dbd351b8989d2e0b9f21b1f366e521d5ac8/deploy/charts/rook-ceph-cluster/values.yaml#L469-L503
-      parameters: &bpSCParameters
-        # (optional) mapOptions is a comma-separated list of map options.
-        # For krbd options refer
-        # https://docs.ceph.com/docs/master/man/8/rbd/#kernel-rbd-krbd-options
-        # For nbd options refer
-        # https://docs.ceph.com/docs/master/man/8/rbd-nbd/#options
-        # mapOptions: lock_on_read,queue_depth=1024
+    default:
+      spec: &bpSpecDefault
+        failureDomain: host
+        replicated:
+          size: 3
+        parameters: &bpSpecParams
+          pg_autoscale_mode: 'on'
+      storageClass: &bpSC
+        enabled: true
+        isDefault: false
+        allowVolumeExpansion: true
+        reclaimPolicy: Delete
+        # parameters copied from https://github.com/rook/rook/blob/3c522dbd351b8989d2e0b9f21b1f366e521d5ac8/deploy/charts/rook-ceph-cluster/values.yaml#L469-L503
+        parameters: &bpSCParameters
+          # (optional) mapOptions is a comma-separated list of map options.
+          # For krbd options refer
+          # https://docs.ceph.com/docs/master/man/8/rbd/#kernel-rbd-krbd-options
+          # For nbd options refer
+          # https://docs.ceph.com/docs/master/man/8/rbd-nbd/#options
+          # mapOptions: lock_on_read,queue_depth=1024
 
-        # (optional) unmapOptions is a comma-separated list of unmap options.
-        # For krbd options refer
-        # https://docs.ceph.com/docs/master/man/8/rbd/#kernel-rbd-krbd-options
-        # For nbd options refer
-        # https://docs.ceph.com/docs/master/man/8/rbd-nbd/#options
-        # unmapOptions: force
+          # (optional) unmapOptions is a comma-separated list of unmap options.
+          # For krbd options refer
+          # https://docs.ceph.com/docs/master/man/8/rbd/#kernel-rbd-krbd-options
+          # For nbd options refer
+          # https://docs.ceph.com/docs/master/man/8/rbd-nbd/#options
+          # unmapOptions: force
 
-        # RBD image format. Defaults to "2".
-        imageFormat: "2"
-        # RBD image features. Available for imageFormat: "2". CSI RBD currently supports only `layering` feature.
-        imageFeatures: layering
-        # The secrets contain Ceph admin credentials.
-        # WARNING: below 2 are required for provisioning PVCs
-        csi.storage.k8s.io/provisioner-secret-name: rook-csi-rbd-provisioner
-        csi.storage.k8s.io/provisioner-secret-namespace: rook-ceph
-        # WARNING: below 2 are required for resizing PVCs
-        csi.storage.k8s.io/controller-expand-secret-name: rook-csi-rbd-provisioner
-        csi.storage.k8s.io/controller-expand-secret-namespace: rook-ceph
-        # WARNING: below 2 are required for... don't know what?
-        csi.storage.k8s.io/node-stage-secret-name: rook-csi-rbd-node
-        csi.storage.k8s.io/node-stage-secret-namespace: rook-ceph
-        # Specify the filesystem type of the volume. If not specified, csi-provisioner
-        # will set default as `ext4`. Note that `xfs` is not recommended due to potential deadlock
-        # in hyperconverged settings where the volume is mounted on the same node as the osds.
-        csi.storage.k8s.io/fstype: ext4
+          # RBD image format. Defaults to "2".
+          imageFormat: "2"
+          # RBD image features. Available for imageFormat: "2". CSI RBD currently supports only `layering` feature.
+          imageFeatures: layering
+          # The secrets contain Ceph admin credentials.
+          # WARNING: below 2 are required for provisioning PVCs
+          csi.storage.k8s.io/provisioner-secret-name: rook-csi-rbd-provisioner
+          csi.storage.k8s.io/provisioner-secret-namespace: rook-system
+          # WARNING: below 2 are required for resizing PVCs
+          csi.storage.k8s.io/controller-expand-secret-name: rook-csi-rbd-provisioner
+          csi.storage.k8s.io/controller-expand-secret-namespace: rook-system
+          # WARNING: below 2 are required for... don't know what?
+          csi.storage.k8s.io/node-stage-secret-name: rook-csi-rbd-node
+          csi.storage.k8s.io/node-stage-secret-namespace: rook-system
+          # Specify the filesystem type of the volume. If not specified, csi-provisioner
+          # will set default as `ext4`. Note that `xfs` is not recommended due to potential deadlock
+          # in hyperconverged settings where the volume is mounted on the same node as the osds.
+          csi.storage.k8s.io/fstype: ext4
+    cache:
+      # see https://stackoverflow.com/q/70478818/1036735
+      spec: &bpSpecCache
+        <<: *bpSpecDefault
+        parameters:
+          <<: *bpSpecParams
+        replicated:
+          size: 1
+          requireSafeReplicaSize: false
+      storageClass: *bpSC
+
+  cephObjectStores:
+    default:
+      # see https://github.com/rook/rook/blob/v1.14.8/Documentation/CRDs/Object-Storage/ceph-object-store-crd.md#object-store-settings for available configuration
+      spec: &osSpecDefault
+        metadataPool: &bpMetadataPool
+          <<: *bpSpecDefault
+          parameters: {}
+          deviceClass: ssd
+        dataPool:
+          <<: *bpSpecDefault
+        preservePoolsOnDelete: true
+        gateway:
+          port: 80
+          resources:
+            limits:
+              memory: "2Gi"
+            requests:
+              cpu: "1000m"
+              memory: "1Gi"
+          # securePort: 443
+          # sslCertificateRef:
+          instances: 1
+          priorityClassName: system-cluster-critical
+      storageClass: &osSCDefault
+        enabled: true
+        reclaimPolicy: Delete
+        volumeBindingMode: "Immediate"
+        annotations: {}
+        labels: {}
+        # see https://github.com/rook/rook/blob/v1.14.8/Documentation/Storage-Configuration/Object-Storage-RGW/ceph-object-bucket-claim.md#storageclass for available configuration
+        parameters:
+          # note: objectStoreNamespace and objectStoreName are configured by the chart
+          region: eu-central-1
+      ingress: &osIngressDefault
+        # Enable an ingress for the ceph-objectstore
+        enabled: false
+        # annotations: {}
+        # host:
+        #   name: objectstore.example.com
+        #   path: /
+        # tls:
+        # - hosts:
+        #     - objectstore.example.com
+        #   secretName: ceph-objectstore-tls
+        # ingressClassName: nginx
+    cache:
+      spec:
+        <<: *osSpecDefault
+        metadataPool: *bpMetadataPool
+        dataPool:
+          <<: *bpSpecCache
+
 
 rook-ceph-cluster:
   operatorNamespace: rook-system
@@ -74,6 +140,10 @@ rook-ceph-cluster:
       #  #- 10.209.0.0/16
       #  cluster: []
 
+    cephConfig:
+      global:
+        # don't warn for cache pools with 1 replica, see https://stackoverflow.com/a/78577286
+        mon_warn_on_pool_no_redundancy: "false"
     mon:
       count: 3
       volumeClaimTemplate:
@@ -116,21 +186,102 @@ rook-ceph-cluster:
             deviceClass: ssd
 
   cephBlockPools:
-    - name: default-ssd
+    - name: block-ssd
       spec:
-        <<: *bpSpec
+        <<: *bpSpecDefault
         deviceClass: ssd
       storageClass:
         <<: *bpSC
         name: block-ssd
 
-    - name: default-hdd
+    - name: block-hdd
       spec:
-        <<: *bpSpec
+        <<: *bpSpecDefault
         deviceClass: hdd
       storageClass:
         <<: *bpSC
         name: block-hdd
 
+    - name: block-ssd-cache
+      spec:
+        <<: *bpSpecCache
+        deviceClass: ssd
+      storageClass:
+        <<: *bpSC
+        name: block-ssd-cache
+
+    - name: block-hdd-cache
+      spec:
+        <<: *bpSpecCache
+        deviceClass: hdd
+      storageClass:
+        <<: *bpSC
+        name: block-hdd-cache
+
+    - name: rgw-root
+      spec:
+        <<: *bpSpecDefault
+        deviceClass: ssd
+        name: ".rgw.root"
+        application: rgw
+        parameters: {}
+
+      storageClass:
+        enabled: false
+
+  cephObjectStores:
+    - name: bucket-hdd
+      spec:
+        <<: *osSpecDefault
+        dataPool:
+          <<: *bpSpecDefault
+          deviceClass: hdd
+      storageClass:
+        <<: *osSCDefault
+        name: bucket-hdd
+    - name: bucket-hdd-cache
+      spec:
+        <<: *osSpecDefault
+        dataPool:
+          <<: *bpSpecCache
+          deviceClass: hdd
+      storageClass:
+        <<: *osSCDefault
+        name: bucket-hdd-cache
+
+  cephBlockPoolsVolumeSnapshotClass:
+    enabled: true
+
   cephFileSystems: []
-  cephObjectStores: []
+#  cephFileSystemVolumeSnapshotClass:
+#    enabled: true
+#    isDefault: false
+#  cephFileSystems:
+#    - name: fs
+#      # see https://github.com/rook/rook/blob/v1.14.8/Documentation/CRDs/Shared-Filesystem/ceph-filesystem-crd.md#filesystem-settings for available configuration
+#      spec:
+#        metadataPool: *bpMetadataPool
+#        dataPools:
+#          - <<: *bpSpecDefault
+#            deviceClass: ssd
+#            name: ssd-0
+#          - <<: *bpSpecDefault
+#            deviceClass: hdd
+#            name: hdd-0
+#        metadataServer:
+#          activeCount: 1
+#          activeStandby: true
+#          resources:
+#            limits:
+#              memory: "4Gi"
+#            requests:
+#              cpu: "100m"
+#              memory: "4Gi"
+#          priorityClassName: system-cluster-critical
+#      storageClass:
+#        <<: *osSCDefault
+#        enabled: false
+#        name: ceph-fs-ssd
+#        pools:
+#          - ssd-0
+#          - hdd-0

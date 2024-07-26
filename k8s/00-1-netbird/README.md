@@ -1,0 +1,1 @@
+- [ ] TODO: netbird nodes are not discoverable over LAN

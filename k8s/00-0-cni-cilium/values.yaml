@@ -1,19 +1,23 @@
 cilium:
+  cluster:
+    name: pic
+    id: 41
+  k8sServiceHost: "fd31:e17c:f07f:1::5"
+  k8sServicePort: 6443
+
   ipv4:
     enabled: true
   ipv6:
     enabled: true
 
-  k8sServiceHost: "fd31:e17c:f07f:1::5"
-  k8sServicePort: 6443
-
   k8s:
     requireIPv4PodCIDR: true
     requireIPv6PodCIDR: true
 
-  cluster:
-    name: pic
-    id: 41
+  rollOutCiliumPods: &rollout true
+
+  # Enable installation of PodCIDR routes between worker nodes if worker nodes share a common L2 network segment.
+  autoDirectNodeRoutes: true
 
   ipam:
     mode: kubernetes
@@ -45,7 +49,7 @@ cilium:
 
   operator:
     replicas: 1
-    rollOutPods: true
+    rollOutPods: *rollout
 
   externalIPs:
     enabled: true
@@ -54,7 +58,17 @@ cilium:
   hostPort:
     enabled: true
 
+  envoy:
+    rollOutPods: *rollout
+
   hubble:
-    enabled: &hubble-enabled false
+    preferIpv6: true
+    enabled: &hubble-enabled true
+    ui:
+      enabled: *hubble-enabled
+      rollOutPods: *rollout
     relay:
       enabled: *hubble-enabled
+      rollOutPods: *rollout
+      dialTimeout: 5s
+      retryTimeout: 5s

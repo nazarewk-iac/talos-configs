@@ -1,6 +1,6 @@
 apiVersion: v2
 name: rook-operator
-version: &version 1.14.8
+version: &version 1.14.9
 dependencies:
   - name: rook-ceph
     repository: https://charts.rook.io/release

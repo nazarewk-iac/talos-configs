@@ -14,6 +14,7 @@
 ###
 
 !*.yaml
+!*.md
 !/Chart.lock
 !/helm
 !/erase.sh

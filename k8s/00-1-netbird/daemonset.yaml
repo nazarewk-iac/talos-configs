@@ -27,12 +27,18 @@ spec:
             - secretRef:
                 name: netbird-env
           env:
+            - name: NB_WIREGUARD_PORT
+              value: '51813'
             - name: NB_HOSTNAME
               valueFrom:
                 fieldRef:
                   fieldPath: spec.nodeName
             - name: NB_LOG_LEVEL
               value: "info"
+          ports:
+            - name: wireguard
+              containerPort: 51813
+              hostPort: 51813
           securityContext:
             capabilities:
               add:

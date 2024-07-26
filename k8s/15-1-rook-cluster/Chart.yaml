@@ -1,6 +1,6 @@
 apiVersion: v2
 name: 15-1-rook-cluster
-version: &version 1.14.8
+version: &version 1.14.9
 dependencies:
   - name: rook-ceph-cluster
     repository: https://charts.rook.io/release
