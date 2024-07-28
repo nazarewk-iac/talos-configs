@@ -17,7 +17,8 @@ cilium:
   rollOutCiliumPods: &rollout true
 
   # Enable installation of PodCIDR routes between worker nodes if worker nodes share a common L2 network segment.
-  autoDirectNodeRoutes: true
+  # doesn't work with tunnel routing
+  autoDirectNodeRoutes: false
 
   ipam:
     mode: kubernetes
@@ -64,6 +65,18 @@ cilium:
   hubble:
     preferIpv6: true
     enabled: &hubble-enabled true
+    metrics:
+      enabled:
+        - dns
+        - drop
+        - tcp
+        # UDP can cause Hubble Relay to fail with `Failed to create peer client for peers synchronization; will try again after the timeout has expired`?
+        #  see https://cilium.slack.com/archives/CQRL1EPAA/p1722121431244969?thread_ts=1722015615.928119&cid=CQRL1EPAA
+        - udp
+        - flow
+        - port-distribution
+        - icmp
+        - http
     ui:
       enabled: *hubble-enabled
       rollOutPods: *rollout
