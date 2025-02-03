@@ -1,14 +1,15 @@
 {
   "talos": {
-    "version": "1.7.5"
+    "version": "1.8.4"
   },
   "k8s": {
-    "version": "1.30.1"
+    "version": "1.30.5"
   },
   "cluster": {
     "name": "pic",
     "domain": "pic.kdn.im",
-    "vip": "fd31:e17c:f07f:1::5"
+    "vip": "fd12:ed4e:366d:eb17:ad77:71d3:4170:ed6d",
+    "endpoint": "k8s.pic.etra.net.int.kdn.im."
   },
   "nodes": {
     "pwet": {
@@ -20,28 +21,23 @@
         "schematic": "nas",
         "secure-boot": true
       },
+      "dns": ["pwet.pic.etra.net.int.kdn.im."],
       "lan": {
-        "dns": "pwet.lan.",
         "duid": "2f20675fe58848c5bdf33d74057a1ee0",
         "link": "enp5s0"
       },
       "links": {
         "enp2s0": {
-          "mac": "A8:B8:E0:04:10:B5",
-          "ipv6": "fd31:e17c:f07f:1:aab8:e0ff:fe04:10b5"
+          "mac": "A8:B8:E0:04:10:B5"
         },
         "enp3s0": {
-          "mac": "A8:B8:E0:04:10:B6",
-          "ipv6": "fd31:e17c:f07f:1:aab8:e0ff:fe04:10b6"
+          "mac": "A8:B8:E0:04:10:B6"
         },
         "enp4s0": {
-          "mac": "A8:B8:E0:04:10:B7",
-          "ipv6": "fd31:e17c:f07f:1:aab8:e0ff:fe04:10b7"
+          "mac": "A8:B8:E0:04:10:B7"
         },
         "enp5s0": {
-          "mac": "A8:B8:E0:04:10:B8",
-          "ipv4": "192.168.41.141",
-          "ipv6": "fd31:e17c:f07f:1:aab8:e0ff:fe04:10b8"
+          "mac": "A8:B8:E0:04:10:B8"
         }
       }
     },
@@ -54,28 +50,23 @@
         "schematic": "nas",
         "secure-boot": true
       },
+      "dns": ["turo.pic.etra.net.int.kdn.im."],
       "lan": {
-        "dns": "turo.lan.",
         "duid": "e5d81626600c43ffa4d9af30bb4dd07a",
         "link": "enp2s0"
       },
       "links": {
         "enp2s0": {
-          "mac": "A8:B8:E0:04:13:0D",
-          "ipv4": "192.168.41.35",
-          "ipv6": "fd31:e17c:f07f:1:aab8:e0ff:fe04:130d"
+          "mac": "A8:B8:E0:04:13:0D"
         },
         "enp3s0": {
-          "mac": "A8:B8:E0:04:13:0E",
-          "ipv6": "fd31:e17c:f07f:1:aab8:e0ff:fe04:130e"
+          "mac": "A8:B8:E0:04:13:0E"
         },
         "enp4s0": {
-          "mac": "A8:B8:E0:04:13:0F",
-          "ipv6": "fd31:e17c:f07f:1:aab8:e0ff:fe04:130f"
+          "mac": "A8:B8:E0:04:13:0F"
         },
         "enp5s0": {
-          "mac": "A8:B8:E0:04:13:10",
-          "ipv6": "fd31:e17c:f07f:1:aab8:e0ff:fe04:1310"
+          "mac": "A8:B8:E0:04:13:10"
         }
       }
     },
@@ -88,28 +79,23 @@
         "schematic": "nas",
         "secure-boot": true
       },
+      "dns": ["yost.pic.etra.net.int.kdn.im."],
       "lan": {
-        "dns": "yost.lan.",
         "duid": "99155f69dee348718de534d4bfec47e6",
         "link": "enp2s0"
       },
       "links": {
         "enp2s0": {
-          "mac": "A8:B8:E0:04:12:F1",
-          "ipv4": "192.168.177",
-          "ipv6": "fd31:e17c:f07f:1:aab8:e0ff:fe04:12f1"
+          "mac": "A8:B8:E0:04:12:F1"
         },
         "enp3s0": {
-          "mac": "A8:B8:E0:04:12:F2",
-          "ipv6": "fd31:e17c:f07f:1:aab8:e0ff:fe04:12f2"
+          "mac": "A8:B8:E0:04:12:F2"
         },
         "enp4s0": {
-          "mac": "A8:B8:E0:04:12:F3",
-          "ipv6": "fd31:e17c:f07f:1:aab8:e0ff:fe04:12f3"
+          "mac": "A8:B8:E0:04:12:F3"
         },
         "enp5s0": {
-          "mac": "A8:B8:E0:04:12:F4",
-          "ipv6": "fd31:e17c:f07f:1:aab8:e0ff:fe04:12f4"
+          "mac": "A8:B8:E0:04:12:F4"
         }
       }
     },
@@ -121,8 +107,8 @@
         "schematic": "rpi4",
         "secure-boot": false
       },
+      "dns": ["rant.pic.etra.net.int.kdn.im."],
       "lan": {
-        "dns": "rant.lan.",
         "mac": "DC:A6:32:7A:22:22",
         "ipv4": "192.168.41.157"
       }
@@ -135,8 +121,8 @@
         "schematic": "rpi4",
         "secure-boot": false
       },
+      "dns": ["hurl.pic.etra.net.int.kdn.im."],
       "lan": {
-        "dns": "hurl.lan.",
         "mac": "DC:A6:32:7A:21:E3",
         "ipv4": "192.168.41.166"
       }
@@ -149,8 +135,8 @@
         "schematic": "rpi4",
         "secure-boot": false
       },
+      "dns": ["jhal.pic.etra.net.int.kdn.im."],
       "lan": {
-        "dns": "jhal.lan.",
         "mac": "DC:A6:32:7A:22:2B",
         "ipv4": "192.168.41.167"
       }

@@ -9,4 +9,4 @@ machine:
           ipv6: true
           duidv6: "e5d81626600c43ffa4d9af30bb4dd07a"
         vip:
-          ip: "fd31:e17c:f07f:1::5"
+          ip: "fd12:ed4e:366d:eb17:ad77:71d3:4170:ed6d"

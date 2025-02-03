@@ -1,0 +1,11 @@
+- [x] try to boot machines with whatever the config they have
+  - their config is erased
+- [ ] switch to from old to new addressing:
+  - start in multiple LANs/VLANs?
+  - 192.168.41/24 -> 10.92/16 VLAN
+  - extra 192.168.73/24 LAN
+  - ULA `fd31:e17c:f07f:1::/64` -> ??
+  - ip based addressing -> DNS based addressing
+- [ ] switch to bonded interfaces
+- [ ] switch to VLAN
+- [ ] backup switch configs

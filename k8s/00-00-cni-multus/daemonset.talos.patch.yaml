@@ -1,0 +1,13 @@
+# see https://www.talos.dev/v1.8/kubernetes-guides/network/multus/#patching-the-daemonset
+apiVersion: apps/v1
+kind: DaemonSet
+metadata:
+  name: kube-multus-ds
+  namespace: kube-system
+spec:
+  template:
+    spec:
+      volumes:
+        - hostPath:
+            path: /var/run/netns/
+          name: host-run-netns

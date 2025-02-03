@@ -1,7 +1,0 @@
-customization:
-  systemExtensions:
-    officialExtensions:
-      - siderolabs/iscsi-tools
-      - siderolabs/util-linux-tools
-      - siderolabs/v4l-uvc-drivers
-      - siderolabs/zfs

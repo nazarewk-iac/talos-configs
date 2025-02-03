@@ -15,7 +15,7 @@ cluster:
       bind-address: "::1"
   network:
     podSubnets:
-      - fd31:e17c:f07f:8b6d::/64 # random ULA subnet
+      - fd12:ed4e:366d:5224::/64 # random ULA subnet
       - 10.209.0.0/16
     serviceSubnets:
       # WARNING: IPv6 service subnet cannot be larger than /108 (previous discussion suggested /112)
@@ -24,14 +24,14 @@ cluster:
       - 10.213.0.0/16
   etcd:
     advertisedSubnets:
-      - fd31:e17c:f07f:1::/64 # primary ULA subnet
-      - 192.168.41.0/24
+      - fd12:ed4e:366d:eb17::/64 # primary ULA subnet
+      - 10.92.0.0/16
 machine:
   kubelet:
     nodeIP:
       validSubnets:
-        - fd31:e17c:f07f:1::/64 # primary ULA subnet
-        - 192.168.41.0/24
+        - fd12:ed4e:366d:eb17::/64 # primary ULA subnet
+        - 10.92.0.0/16
   features:
     kubePrism:
       # KubePrism is hardcoded to ipv4:

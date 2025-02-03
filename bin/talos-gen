@@ -1,7 +1,12 @@
 #!/usr/bin/env bash
 set -eEuo pipefail
-test -z "${DEBUG:-}" || set -x
+trap 'info "Error when executing $BASH_COMMAND at line $LINENO!" >&2' ERR
+info() { test "${LOG_LEVEL:-20}" -ge 20 || echo "[$(date -Iseconds)]" "$@" >&2; }
+debug() { test "${LOG_LEVEL:-20}" -ge 10 || echo "[$(date -Iseconds)]" "$@" >&2; }
+debug "STARTING $*"
+trap 'debug "FINISHED $*"' EXIT
 test -n "${PRJ_ROOT:-}" || eval "$(cd "${BASH_SOURCE[0]%/*}" && direnv export bash)"
+test -z "${DEBUG:-}" || set -x
 # initializes Talos configurations
 script_name="${BASH_SOURCE[0]##*/}"
 
@@ -25,11 +30,11 @@ gen_node() {
   args+=(--output="${cache}/node-$name.yaml")
   args+=(--output-types="$type")
   args+=(--additional-sans="$(jq -r '
-    [
-      .lan.dns,
+    .dns + [
+      env.cluster_endpoint,
+      env.name, # this seems to already be part of certificates
       .links[.lan.link].ipv4,
       .links[.lan.link].ipv6,
-      env.name, # this seems to already be part of certificates
       "::", #apiserver
       "::1" # TODO: controller-manager, scheduler ?
     ]
@@ -79,9 +84,9 @@ main() {
 
   secrets="$(talos-gen-configs -- secrets.yaml)"
   cluster_domain="$(talos-cfg -r '.cluster.domain')"
-  cluster_vip="$(talos-cfg -r '.cluster.vip')"
+  cluster_endpoint="$(talos-cfg -r '.cluster.endpoint')"
 
-  default_endpoint="${default_endpoint:-"$(talos-cfg -r ".nodes | to_entries[0].value | .links[.lan.link].ipv4")"}"
+  export cluster_endpoint cluster_domain
 
   endpoints=()
   controlplanes=()
@@ -97,8 +102,7 @@ main() {
       continue
     fi
 
-    ip="$(jq -r ".links[.lan.link].ipv6" <<<"${node_json}")"
-    dns="$(jq -r ".lan.dns" <<<"${node_json}")"
+    dns="$(jq -r ".dns[0]" <<<"${node_json}")"
     name="$(jq -r ".name" <<<"${node_json}")"
     type="$(jq -r ".type" <<<"${node_json}")"
     # shellcheck disable=SC2034
@@ -115,14 +119,12 @@ main() {
       talos_up="name"
     elif is_talos_node_up "${dns}"; then
       talos_up="dns"
-    elif is_talos_node_up "${ip}"; then
-      talos_up="ip"
     else
       talos_up=""
     fi
 
     case "${talos_up}" in
-    netbird | dns | name | ip)
+    netbird | dns | name)
       running_nodes+=("${!talos_up}")
       if test "${type}" == "controlplane"; then
         log "Running controlplane node at ${!talos_up}"
@@ -132,7 +134,6 @@ main() {
       ;;
     esac
   done < <(talos-cfg-nodes -c .)
-  test "${#endpoints[@]}" -gt 0 || endpoints=("${default_endpoint}")
 
   log "controlplanes:"
   log " - %s" "${controlplanes[@]}"
@@ -143,18 +144,7 @@ main() {
   log "running nodes:"
   log " - %s" "${running_nodes[@]}"
 
-  kubernetes_endpoint="https://${endpoints[0]}:6443"
-  for ip in "${cluster_vip}" "${endpoints[@]}"; do
-    if can_connect "${ip}" 6443 &>/dev/null; then
-      if [[ ${ip} == *:* ]]; then
-        # IPv6
-        kubernetes_endpoint="https://[${ip}]:6443"
-      else
-        kubernetes_endpoint="https://${ip}:6443"
-      fi
-      break
-    fi
-  done
+  kubernetes_endpoint="https://${cluster_endpoint}:6443"
   log "kubernetes_endpoint: ${kubernetes_endpoint}"
 
   config_args=(

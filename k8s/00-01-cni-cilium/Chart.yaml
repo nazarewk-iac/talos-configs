@@ -1,6 +1,6 @@
 apiVersion: v2
 name: 00-0-cni-cilium
-version: &version 1.16.0
+version: &version 1.16.4
 appVersion: *version
 dependencies:
   - name: cilium

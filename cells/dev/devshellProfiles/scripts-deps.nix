@@ -13,12 +13,15 @@
   packages = with pkgs; [
     curl
     diffutils
+    envsubst
     findutils
+    gawk
     gnused
     gojq
     jq
     netcat
     pass
+    rsync
     yq-go
     zstd
   ];

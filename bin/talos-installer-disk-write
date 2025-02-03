@@ -1,18 +1,17 @@
 #!/usr/bin/env bash
 set -eEuo pipefail
-test -z "${DEBUG:-}" || set -x
+trap 'info "Error when executing $BASH_COMMAND at line $LINENO!" >&2' ERR
+info() { test "${LOG_LEVEL:-20}" -ge 20 || echo "[$(date -Iseconds)]" "$@" >&2; }
+debug() { test "${LOG_LEVEL:-20}" -ge 10 || echo "[$(date -Iseconds)]" "$@" >&2; }
+debug "STARTING $*"
+trap 'debug "FINISHED $*"' EXIT
 test -n "${PRJ_ROOT:-}" || eval "$(cd "${BASH_SOURCE[0]%/*}" && direnv export bash)"
+test -z "${DEBUG:-}" || set -x
 
-disk="$1"
+disk="${1}"
 node_name="${2}"
-node="$(name="${node_name}" talos-cfg -cM '.nodes[env.name]')"
-schematic="$(jq -r .image.schematic <<<"$node")"
-url="$(talos-image-url "${node_name}" install)"
-version="$(talos-cfg -r .talos.version)"
-filename="${url##*/}"
-out="${PRJ_CACHE_HOME}/talos/v${version}/${schematic}.${filename}"
-mkdir -p "${out%/*}"
-test -e "$out" || curl --fail "${url}" -o "$out"
+type="${3}"
+out="$(talos-image-url "${node_name}" cache iso "${type}")"
 
 unpack() {
   case "$out" in

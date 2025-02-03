@@ -1,27 +1,51 @@
 #!/usr/bin/env bash
 set -eEuo pipefail
-test -z "${DEBUG:-}" || set -x
+trap 'info "Error when executing $BASH_COMMAND at line $LINENO!" >&2' ERR
+info() { test "${LOG_LEVEL:-20}" -ge 20 || echo "[$(date -Iseconds)]" "$@" >&2; }
+debug() { test "${LOG_LEVEL:-20}" -ge 10 || echo "[$(date -Iseconds)]" "$@" >&2; }
+debug "STARTING $*"
+trap 'debug "FINISHED $*"' EXIT
 test -n "${PRJ_ROOT:-}" || eval "$(cd "${BASH_SOURCE[0]%/*}" && direnv export bash)"
+test -z "${DEBUG:-}" || set -x
 
-node="$(name="${1}" talos-cfg -cM '.nodes[env.name]')"
+export node_name="${1}"
+node="$(talos-cfg -cM '.nodes[env.node_name]')"
 action="${2:-upgrade}"
 type="${3:-"$(jq -r '.image.type // "raw"' <<<"$node")"}"
 secure_boot="$(jq -r '.image["secure-boot"]' <<<"$node")"
 arch="$(jq -r '.image.arch' <<<"$node")"
 platform="$(jq -r '.image.platform // "metal"' <<<"$node")"
-schematic="$(jq -r '.image.schematic' <<<"$node")"
-spec="${PRJ_ROOT}/image-schematics/${schematic}.yaml"
-
-id="$(curl --silent --fail -X POST --data-binary "@${spec}" https://factory.talos.dev/schematics | jq -r .id)"
+schematic="${4:-"$(jq -r '.image.schematic' <<<"$node")"}"
 version="$(talos-cfg -r .talos.version)"
-base_install_url="https://factory.talos.dev/image/${id}/v${version}"
+
+schematic_cache_path="${PRJ_CACHE_HOME}/talos/v${version}/images/${node_name}.${schematic}.schematic.yaml"
+
+mkschematic() {
+  local spec_base="${PRJ_ROOT}/image-schematics/${schematic}"
+  mkdir -p "${schematic_cache_path%/*}"
+  if test -e "${spec_base}.envsubst.yaml"; then
+    (
+      export node_name platform
+      eval "$(jq -r '.links|to_entries|map(
+        "export \(.key)=enx\(.value.mac | ascii_downcase | gsub(":"; ""))"
+      ) | join("\n")' <<<"$node")"
+      envsubst -i "${spec_base}.envsubst.yaml" -o "${schematic_cache_path}" >&2
+    )
+  else
+    cp "${spec_base}.yaml" "${schematic_cache_path}"
+  fi
+}
+
+mkschematic
+schematic_id="$(curl --silent --fail -X POST --data-binary "@${schematic_cache_path}" https://factory.talos.dev/schematics | jq -r .id)"
+base_install_url="https://factory.talos.dev/image/${schematic_id}/v${version}"
 
 secureboot_suffix=""
 if test "${secure_boot}" == "true"; then
   secureboot_suffix="-secureboot"
 fi
 
-upgrade_url="factory.talos.dev/installer${secureboot_suffix}/${id}:v${version}"
+upgrade_url="factory.talos.dev/installer${secureboot_suffix}/${schematic_id}:v${version}"
 case "${type}" in
 iso)
   install_url="${base_install_url}/${platform}-${arch}${secureboot_suffix}.iso"
@@ -30,10 +54,12 @@ raw)
   install_url="${base_install_url}/${platform}-${arch}${secureboot_suffix}.raw.zst"
   ;;
 *)
-  echo "ERROR: invalid imagu type ${type}" >&2
+  echo "ERROR: invalid image type ${type}" >&2
   exit 1
   ;;
 esac
+
+cache_path="${PRJ_CACHE_HOME}/talos/v${version}/images/${node_name}.${schematic_id}.${install_url##*/}"
 
 case "${action}" in
 upgrade)
@@ -41,6 +67,16 @@ upgrade)
   ;;
 install)
   echo -n "${install_url}"
+  ;;
+cache-path)
+  echo -n "${cache_path}"
+  ;;
+cache)
+  if ! test -e "${cache_path}"; then
+    mkdir -p "${cache_path%/*}"
+    curl -L "${install_url}" -o "${cache_path}" >&2
+  fi
+  echo -n "${cache_path}"
   ;;
 sync)
   output="${3:-"all"}"

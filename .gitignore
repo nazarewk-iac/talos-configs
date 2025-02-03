@@ -18,6 +18,7 @@
 !*.patch
 !*.sh
 
+!/.sops.yaml
 !/bin/talos*
 !/bin/k8s*
 !/config.json
@@ -62,3 +63,4 @@
 ###
 ### END divnix/std
 ###
+!/README.md

@@ -1,0 +1,10 @@
+resources:
+  - upstream.yaml
+patches:
+  - path: daemonset.talos.patch.yaml
+  - path: daemonset.cilium.patch.yaml
+
+images:
+  - name: ghcr.io/siderolabs/install-cni
+    # TODO: change it from config.json
+    newTag: 1.8.4

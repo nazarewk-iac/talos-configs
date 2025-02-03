@@ -1,12 +1,23 @@
 machine:
   network:
     interfaces:
-      - deviceSelector:
-          hardwareAddr: "a8:b8:e0:04:10:b8"
+      - bond:
+          deviceSelector:
+            hardwareAddr: "a8:b8:e0:04:10:*"
+          mode: 802.3ad
+          lacpRate: fast
+          xmitHashPolicy: layer2+3
         dhcp: true
         dhcpOptions:
           ipv4: true
-          ipv6: true
-          duidv6: "2f20675fe58848c5bdf33d74057a1ee0"
-        vip:
-          ip: "fd31:e17c:f07f:1::5"
+          ipv6: false
+          duidv6: "78fbde3dfda941fabd124390e5534557"
+        vlans:
+          - vlanId: 1859
+            dhcp: true
+            dhcpOptions:
+              ipv4: true
+              ipv6: false
+              duidv6: "2f20675fe58848c5bdf33d74057a1ee0"
+            vip:
+              ip: "fd12:ed4e:366d:eb17:ad77:71d3:4170:ed6d"

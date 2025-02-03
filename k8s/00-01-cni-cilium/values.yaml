@@ -2,7 +2,7 @@ cilium:
   cluster:
     name: pic
     id: 41
-  k8sServiceHost: "fd31:e17c:f07f:1::5"
+  k8sServiceHost: "fd12:ed4e:366d:eb17:ad77:71d3:4170:ed6d"
   k8sServicePort: 6443
 
   ipv4:
@@ -15,6 +15,12 @@ cilium:
     requireIPv6PodCIDR: true
 
   rollOutCiliumPods: &rollout true
+
+  l2announcements:
+    enabled: true
+    leaseDuration: 15s
+    leaseRenewDeadline: 5s
+    leaseRetryPeriod: 2s
 
   # Enable installation of PodCIDR routes between worker nodes if worker nodes share a common L2 network segment.
   # doesn't work with tunnel routing
@@ -85,3 +91,7 @@ cilium:
       rollOutPods: *rollout
       dialTimeout: 5s
       retryTimeout: 5s
+  cni:
+    # see https://github.com/siderolabs/talos/discussions/7914
+    # required to cooperate with Multus
+    exclusive: false

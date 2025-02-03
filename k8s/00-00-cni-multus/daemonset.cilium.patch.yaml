@@ -1,0 +1,20 @@
+# see https://www.talos.dev/v1.8/kubernetes-guides/network/multus/#notes-on-using-cilium-in-combination-with-multus
+apiVersion: apps/v1
+kind: DaemonSet
+metadata:
+  name: kube-multus-ds
+  namespace: kube-system
+spec:
+  template:
+    spec:
+      initContainers:
+        - command:
+            - /install-cni.sh
+          image: ghcr.io/siderolabs/install-cni:v1.7.0  # adapt to your talos version
+          name: install-cni
+          securityContext:
+            privileged: true
+          volumeMounts:
+            - mountPath: /host/opt/cni/bin
+              mountPropagation: Bidirectional
+              name: cnibin

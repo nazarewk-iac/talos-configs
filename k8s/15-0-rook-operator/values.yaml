@@ -1,4 +1,10 @@
 rook-ceph:
   rbacEnable: true
   monitoring:
-    enabled: true
+    enabled: false # requires Prometheus
+  disableDeviceHotplug: false
+  csi:
+    # encrypting the whole drives anyway
+    enableCSIEncryption: false
+    enableMetadata: true
+    clusterName: pic

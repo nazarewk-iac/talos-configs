@@ -1,0 +1,23 @@
+customization:
+  extraKernelArgs:
+    # START required parameters
+    - "talos.platform=${platform}"
+    - "slab_nomerge"
+    - "pti=on"
+    # END required parameters
+    # START recommended parameters
+    - "init_on_alloc=1"
+    - "init_on_free=1"
+    # END recommended parameters
+  systemExtensions:
+    officialExtensions:
+      # START SzBox N100 mobo specific
+      - siderolabs/i915-ucode
+      - siderolabs/intel-ucode
+      - siderolabs/intel-ice-firmware
+      # END SzBox N100 mobo specific
+
+      - siderolabs/iscsi-tools
+      - siderolabs/util-linux-tools
+      - siderolabs/v4l-uvc-drivers
+      - siderolabs/zfs

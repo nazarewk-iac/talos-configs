@@ -10,8 +10,10 @@ nix develop --command fish
 # (re-)generate configurations
 talos-gen
 
-# generate an ISO
-talos-installer-disk-write /dev/disk/by-id/usb-Samsung_Portable_SSD_T5_1234567D585A-0:0 pwet iso
+# generate an ISO to USB drive
+talos-installer-disk-write /dev/disk/by-id/usb-Samsung_Portable_SSD_T5_1234567D585A-0:0 pwet nas-initial
+# generate an ISO to NanoKVM mountable
+scp "$(talos-image-url pwet cache iso nas-initial)" root@kvm-4385.lan.etra.net.int.kdn.im:/data/
 
 # in BIOS enter Secure Boot "Setup Mode" (becomes visible when doing custom secure boot)
 # plug in the USB
@@ -21,7 +23,7 @@ talos-installer-disk-write /dev/disk/by-id/usb-Samsung_Portable_SSD_T5_1234567D5
 # first node
 talos-node-apply --insecure pwet
 
-# boostrap only the first nose
+# boostrap only the first node
 talosctl-node pwet bootstrap
 
 talosctl-node pwet kubeconfig --force
@@ -77,6 +79,7 @@ Runs on 3x Raspberry Pi 4 4GB, each holding:
   - [x] dual-stack (IPv4 + IPv6)
   - [x] use Cilium CNI
   - [ ] make (cluster) IPv6s are accessible from LAN
+  - [ ] deploy Multus CNI for multiple connections?
   - [x] run Netbird client
   - expose Kubernetes controlplane:
     - [ ] to LAN
@@ -138,15 +141,15 @@ Based on following materials:
 CWWK N100 setup checklist:
 
 - [ ] boot the Talos Installer SecureBoot ISO & select `Enroll Secure Boot keys: auto` from boot menu
-- [ ] reboot into Talos Installer ISO, note down the IP or get it from router `fd31:e17c:f07f:1:aab8:e0ff:fe04:130d`
+- [ ] reboot into Talos Installer ISO, note down the IP or get it from router `fd12:ed4e:366d:eb17:aab8:e0ff:fe04:130d`
 - [ ] set up `hostname.yaml`
 - [ ] set up `install-disk.yaml`:
-  - `talosctl -n fd31:e17c:f07f:1:aab8:e0ff:fe04:130d disks --insecure`
+  - `talosctl -n fd12:ed4e:366d:eb17:aab8:e0ff:fe04:130d disks --insecure`
 - [ ] set up `networking.yaml`:
   - generate DUID with `uuidget | tr -d '-'`, store it here and in `config.json`
-  - `talosctl -n fd31:e17c:f07f:1:aab8:e0ff:fe04:130d get addresses --insecure`
+  - `talosctl -n fd12:ed4e:366d:eb17:aab8:e0ff:fe04:130d get addresses --insecure`
 - [ ] fill in all network interfaces:
-  - `talosctl -n fd31:e17c:f07f:1:aab8:e0ff:fe04:130d get link --insecure`
+  - `talosctl -n fd12:ed4e:366d:eb17:aab8:e0ff:fe04:130d get link --insecure`
 - [ ] `enable: true` in `config.json`
 - [ ] run `talos-gen`
 - [ ] apply node config:
@@ -268,9 +271,9 @@ Best identified with `wwid`: `*DD56419883014*`
 
 ```
 NODE        DEV            MODEL         SERIAL       TYPE   UUID   WWID                                              MODALIAS      NAME    SIZE     BUS_PATH                                                                                       SUBSYSTEM          READ_ONLY   SYSTEM_DISK
-rant.lan.   /dev/sda       USB3.0        -            HDD    -      t10.ANKEJE  USB3.0          DD56419883014\0\0\0   scsi:t-0x00   -       1.0 TB   /system/container/ACPI0004:02/PNP0D10:00/usb3/3-1/3-1:1.0/host0/target0:0:0/0:0:0:0/           /sys/class/block
-hurl.lan.   /dev/sdb       USB3.0        -            HDD    -      t10.ANKEJE  USB3.0          DD56419883014\0\0\0   scsi:t-0x00   -       1.0 TB   /system/container/ACPI0004:02/PNP0D10:00/usb3/3-1/3-1.1/3-1.1:1.0/host1/target1:0:0/1:0:0:0/   /sys/class/block
-jhal.lan.   /dev/sdb       USB3.0        -            HDD    -      t10.ANKEJE  USB3.0          DD56419883014\0\0\0   scsi:t-0x00   -       1.0 TB   /system/container/ACPI0004:02/PNP0D10:00/usb3/3-1/3-1.3/3-1.3:1.0/host1/target1:0:0/1:0:0:0/   /sys/class/block
+rant.pic.etra.net.int.kdn.im.   /dev/sda       USB3.0        -            HDD    -      t10.ANKEJE  USB3.0          DD56419883014\0\0\0   scsi:t-0x00   -       1.0 TB   /system/container/ACPI0004:02/PNP0D10:00/usb3/3-1/3-1:1.0/host0/target0:0:0/0:0:0:0/           /sys/class/block
+hurl.pic.etra.net.int.kdn.im.   /dev/sdb       USB3.0        -            HDD    -      t10.ANKEJE  USB3.0          DD56419883014\0\0\0   scsi:t-0x00   -       1.0 TB   /system/container/ACPI0004:02/PNP0D10:00/usb3/3-1/3-1.1/3-1.1:1.0/host1/target1:0:0/1:0:0:0/   /sys/class/block
+jhal.pic.etra.net.int.kdn.im.   /dev/sdb       USB3.0        -            HDD    -      t10.ANKEJE  USB3.0          DD56419883014\0\0\0   scsi:t-0x00   -       1.0 TB   /system/container/ACPI0004:02/PNP0D10:00/usb3/3-1/3-1.3/3-1.3:1.0/host1/target1:0:0/1:0:0:0/   /sys/class/block
 ```
 
 #### USB3.0 to M.2 SSD adapter
@@ -279,9 +282,9 @@ Best identified with `wwid`: `*DD564198838A3*`:
 
 ```
 NODE        DEV            MODEL         SERIAL       TYPE   UUID   WWID                                              MODALIAS      NAME    SIZE     BUS_PATH                                                                                       SUBSYSTEM          READ_ONLY   SYSTEM_DISK
-rant.lan.   /dev/sdb       Super Speed   -            HDD    -      t10.USB3.0  Super Speed     DD564198838A3\0\0\0   scsi:t-0x00   -       256 GB   /system/container/ACPI0004:02/PNP0D10:00/usb3/3-2/3-2:1.0/host1/target1:0:0/1:0:0:0/           /sys/class/block               *
-hurl.lan.   /dev/sda       Super Speed   -            HDD    -      t10.USB3.0  Super Speed     DD564198838A3\0\0\0   scsi:t-0x00   -       256 GB   /system/container/ACPI0004:02/PNP0D10:00/usb3/3-2/3-2:1.0/host0/target0:0:0/0:0:0:0/           /sys/class/block               *
-jhal.lan.   /dev/sda       Super Speed   -            HDD    -      t10.USB3.0  Super Speed     DD564198838A3\0\0\0   scsi:t-0x00   -       256 GB   /system/container/ACPI0004:02/PNP0D10:00/usb3/3-2/3-2:1.0/host0/target0:0:0/0:0:0:0/           /sys/class/block               *
+rant.pic.etra.net.int.kdn.im.   /dev/sdb       Super Speed   -            HDD    -      t10.USB3.0  Super Speed     DD564198838A3\0\0\0   scsi:t-0x00   -       256 GB   /system/container/ACPI0004:02/PNP0D10:00/usb3/3-2/3-2:1.0/host1/target1:0:0/1:0:0:0/           /sys/class/block               *
+hurl.pic.etra.net.int.kdn.im.   /dev/sda       Super Speed   -            HDD    -      t10.USB3.0  Super Speed     DD564198838A3\0\0\0   scsi:t-0x00   -       256 GB   /system/container/ACPI0004:02/PNP0D10:00/usb3/3-2/3-2:1.0/host0/target0:0:0/0:0:0:0/           /sys/class/block               *
+jhal.pic.etra.net.int.kdn.im.   /dev/sda       Super Speed   -            HDD    -      t10.USB3.0  Super Speed     DD564198838A3\0\0\0   scsi:t-0x00   -       256 GB   /system/container/ACPI0004:02/PNP0D10:00/usb3/3-2/3-2:1.0/host0/target0:0:0/0:0:0:0/           /sys/class/block               *
 ```
 
 #### All connected disks
@@ -292,22 +295,22 @@ jhal.lan.   /dev/sda       Super Speed   -            HDD    -      t10.USB3.0  
 ```
 [TALOSCTL] /home/kdn/dev/github.com/nazarewk-iac/talos-configs/talos-1.7.5/talosctl-linux-amd64 --cluster=pic disks
 NODE        DEV            MODEL             SERIAL       TYPE   UUID   WWID                   MODALIAS      NAME    SIZE     BUS_PATH                                                                               SUBSYSTEM          READ_ONLY   SYSTEM_DISK
-rant.lan.   /dev/mmcblk1   -                 0x28fbade5   SD     -      -                      -             SA32G   31 GB    /system/container/ACPI0004:01/BRCME88C:00/mmc_host/mmc1/mmc1:1234/                     /sys/class/block
-rant.lan.   /dev/sda       500SSD1           -            HDD    -      -                      scsi:t-0x00   -       1.0 TB   /system/container/ACPI0004:02/PNP0D10:00/usb3/3-1/3-1:1.0/host0/target0:0:0/0:0:0:0/   /sys/class/block
-rant.lan.   /dev/sdb       001-2MA101        -            HDD    -      -                      scsi:t-0x00   -       4.0 TB   /system/container/ACPI0004:02/PNP0D10:00/usb3/3-1/3-1:1.0/host0/target0:0:0/0:0:0:1/   /sys/class/block
-rant.lan.   /dev/sdc       Portable SSD T5   -            SSD    -      naa.5000000000000001   scsi:t-0x00   -       250 GB   /system/container/ACPI0004:02/PNP0D10:00/usb3/3-2/3-2:1.0/host1/target1:0:0/1:0:0:0/   /sys/class/block               *
-rant.lan.   /dev/sdd       500SSD1           -            HDD    -      -                      scsi:t-0x00   -       2.0 TB   /system/container/ACPI0004:02/PNP0D10:00/usb3/3-1/3-1:1.0/host0/target0:0:0/0:0:0:2/   /sys/class/block
-jhal.lan.   /dev/mmcblk1   -                 0x28fbace4   SD     -      -                      -             SA32G   31 GB    /system/container/ACPI0004:01/BRCME88C:00/mmc_host/mmc1/mmc1:1234/                     /sys/class/block
-jhal.lan.   /dev/sda       500SSD1           -            HDD    -      -                      scsi:t-0x00   -       1.0 TB   /system/container/ACPI0004:02/PNP0D10:00/usb3/3-1/3-1:1.0/host0/target0:0:0/0:0:0:0/   /sys/class/block
-jhal.lan.   /dev/sdb       001-2MA101        -            HDD    -      -                      scsi:t-0x00   -       4.0 TB   /system/container/ACPI0004:02/PNP0D10:00/usb3/3-1/3-1:1.0/host0/target0:0:0/0:0:0:1/   /sys/class/block
-jhal.lan.   /dev/sdc       Super Speed       -            HDD    -      -                      scsi:t-0x00   -       256 GB   /system/container/ACPI0004:02/PNP0D10:00/usb3/3-2/3-2:1.0/host1/target1:0:0/1:0:0:0/   /sys/class/block               *
-jhal.lan.   /dev/sdd       500SSD1           -            HDD    -      -                      scsi:t-0x00   -       2.0 TB   /system/container/ACPI0004:02/PNP0D10:00/usb3/3-1/3-1:1.0/host0/target0:0:0/0:0:0:2/   /sys/class/block
-hurl.lan.   /dev/mmcblk1   -                 0x28fbad8b   SD     -      -                      -             SA32G   31 GB    /system/container/ACPI0004:01/BRCME88C:00/mmc_host/mmc1/mmc1:1234/                     /sys/class/block
-hurl.lan.   /dev/sda       500SSD1           -            HDD    -      -                      scsi:t-0x00   -       1.0 TB   /system/container/ACPI0004:02/PNP0D10:00/usb3/3-1/3-1:1.0/host0/target0:0:0/0:0:0:0/   /sys/class/block
-hurl.lan.   /dev/sdb       Super Speed       -            HDD    -      -                      scsi:t-0x00   -       256 GB   /system/container/ACPI0004:02/PNP0D10:00/usb3/3-2/3-2:1.0/host1/target1:0:0/1:0:0:0/   /sys/class/block               *
-hurl.lan.   /dev/sdc       00AAKS-00A7B0     -            HDD    -      -                      scsi:t-0x00   -       500 GB   /system/container/ACPI0004:02/PNP0D10:00/usb3/3-1/3-1:1.0/host0/target0:0:0/0:0:0:1/   /sys/class/block
-hurl.lan.   /dev/sdd       001-1ER164        -            HDD    -      -                      scsi:t-0x00   -       2.0 TB   /system/container/ACPI0004:02/PNP0D10:00/usb3/3-1/3-1:1.0/host0/target0:0:0/0:0:0:2/   /sys/class/block
-hurl.lan.   /dev/sde       P210 2048GB       -            HDD    -      -                      scsi:t-0x00   -       2.0 TB   /system/container/ACPI0004:02/PNP0D10:00/usb3/3-1/3-1:1.0/host0/target0:0:0/0:0:0:3/   /sys/class/block
+rant.pic.etra.net.int.kdn.im.   /dev/mmcblk1   -                 0x28fbade5   SD     -      -                      -             SA32G   31 GB    /system/container/ACPI0004:01/BRCME88C:00/mmc_host/mmc1/mmc1:1234/                     /sys/class/block
+rant.pic.etra.net.int.kdn.im.   /dev/sda       500SSD1           -            HDD    -      -                      scsi:t-0x00   -       1.0 TB   /system/container/ACPI0004:02/PNP0D10:00/usb3/3-1/3-1:1.0/host0/target0:0:0/0:0:0:0/   /sys/class/block
+rant.pic.etra.net.int.kdn.im.   /dev/sdb       001-2MA101        -            HDD    -      -                      scsi:t-0x00   -       4.0 TB   /system/container/ACPI0004:02/PNP0D10:00/usb3/3-1/3-1:1.0/host0/target0:0:0/0:0:0:1/   /sys/class/block
+rant.pic.etra.net.int.kdn.im.   /dev/sdc       Portable SSD T5   -            SSD    -      naa.5000000000000001   scsi:t-0x00   -       250 GB   /system/container/ACPI0004:02/PNP0D10:00/usb3/3-2/3-2:1.0/host1/target1:0:0/1:0:0:0/   /sys/class/block               *
+rant.pic.etra.net.int.kdn.im.   /dev/sdd       500SSD1           -            HDD    -      -                      scsi:t-0x00   -       2.0 TB   /system/container/ACPI0004:02/PNP0D10:00/usb3/3-1/3-1:1.0/host0/target0:0:0/0:0:0:2/   /sys/class/block
+jhal.pic.etra.net.int.kdn.im.   /dev/mmcblk1   -                 0x28fbace4   SD     -      -                      -             SA32G   31 GB    /system/container/ACPI0004:01/BRCME88C:00/mmc_host/mmc1/mmc1:1234/                     /sys/class/block
+jhal.pic.etra.net.int.kdn.im.   /dev/sda       500SSD1           -            HDD    -      -                      scsi:t-0x00   -       1.0 TB   /system/container/ACPI0004:02/PNP0D10:00/usb3/3-1/3-1:1.0/host0/target0:0:0/0:0:0:0/   /sys/class/block
+jhal.pic.etra.net.int.kdn.im.   /dev/sdb       001-2MA101        -            HDD    -      -                      scsi:t-0x00   -       4.0 TB   /system/container/ACPI0004:02/PNP0D10:00/usb3/3-1/3-1:1.0/host0/target0:0:0/0:0:0:1/   /sys/class/block
+jhal.pic.etra.net.int.kdn.im.   /dev/sdc       Super Speed       -            HDD    -      -                      scsi:t-0x00   -       256 GB   /system/container/ACPI0004:02/PNP0D10:00/usb3/3-2/3-2:1.0/host1/target1:0:0/1:0:0:0/   /sys/class/block               *
+jhal.pic.etra.net.int.kdn.im.   /dev/sdd       500SSD1           -            HDD    -      -                      scsi:t-0x00   -       2.0 TB   /system/container/ACPI0004:02/PNP0D10:00/usb3/3-1/3-1:1.0/host0/target0:0:0/0:0:0:2/   /sys/class/block
+hurl.pic.etra.net.int.kdn.im.   /dev/mmcblk1   -                 0x28fbad8b   SD     -      -                      -             SA32G   31 GB    /system/container/ACPI0004:01/BRCME88C:00/mmc_host/mmc1/mmc1:1234/                     /sys/class/block
+hurl.pic.etra.net.int.kdn.im.   /dev/sda       500SSD1           -            HDD    -      -                      scsi:t-0x00   -       1.0 TB   /system/container/ACPI0004:02/PNP0D10:00/usb3/3-1/3-1:1.0/host0/target0:0:0/0:0:0:0/   /sys/class/block
+hurl.pic.etra.net.int.kdn.im.   /dev/sdb       Super Speed       -            HDD    -      -                      scsi:t-0x00   -       256 GB   /system/container/ACPI0004:02/PNP0D10:00/usb3/3-2/3-2:1.0/host1/target1:0:0/1:0:0:0/   /sys/class/block               *
+hurl.pic.etra.net.int.kdn.im.   /dev/sdc       00AAKS-00A7B0     -            HDD    -      -                      scsi:t-0x00   -       500 GB   /system/container/ACPI0004:02/PNP0D10:00/usb3/3-1/3-1:1.0/host0/target0:0:0/0:0:0:1/   /sys/class/block
+hurl.pic.etra.net.int.kdn.im.   /dev/sdd       001-1ER164        -            HDD    -      -                      scsi:t-0x00   -       2.0 TB   /system/container/ACPI0004:02/PNP0D10:00/usb3/3-1/3-1:1.0/host0/target0:0:0/0:0:0:2/   /sys/class/block
+hurl.pic.etra.net.int.kdn.im.   /dev/sde       P210 2048GB       -            HDD    -      -                      scsi:t-0x00   -       2.0 TB   /system/container/ACPI0004:02/PNP0D10:00/usb3/3-1/3-1:1.0/host0/target0:0:0/0:0:0:3/   /sys/class/block
 ```
 
 </details>

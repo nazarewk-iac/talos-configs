@@ -12,5 +12,6 @@ openebs:
       mayastor:
         enabled: false
   zfs-localpv:
+    enabled: true
     zfsNode:
       encrKeysDir: /var/lib/internal/openebs/zfs-localpv/keys

@@ -1,0 +1,6 @@
+#!/usr/bin/env bash
+set -eEuo pipefail
+test -z "${DEBUG:-}" || set -x
+cd "${BASH_SOURCE[0]%/*}"
+
+kustomize build upstream > upstream.yaml

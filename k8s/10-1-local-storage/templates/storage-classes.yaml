@@ -1,13 +1,14 @@
 apiVersion: storage.k8s.io/v1
 kind: StorageClass
 metadata:
-  name: zfs
+  name: local-zfs
 provisioner: zfs.csi.openebs.io
 volumeBindingMode: WaitForFirstConsumer
 allowVolumeExpansion: true
 parameters:
   fstype: "zfs"
   poolname: "pic-local/internal/openebs/zfs-localpv/provisioned"
+  shared: "yes"
 {{/*  recordsize: "128k"*/}}
 {{/*  compression: "off"*/}}
 {{/*  dedup: "off"*/}}
@@ -16,17 +17,19 @@ allowedTopologies:
       - key: zpool.storage.kdn.im/pic-local
         values:
           - "true"
+
 ---
 
 apiVersion: storage.k8s.io/v1
 kind: StorageClass
 metadata:
-  name: zfs-block
+  name: local-ext4
 provisioner: zfs.csi.openebs.io
 # WaitForFirstConsumer makes localpv respect Kubernetes scheduler for pod placement
 volumeBindingMode: WaitForFirstConsumer
 allowVolumeExpansion: true
 parameters:
+  fstype: "ext4"
   poolname: "pic-local/internal/openebs/zfs-localpv/provisioned"
 allowedTopologies:
   - matchLabelExpressions:

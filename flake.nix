@@ -6,7 +6,7 @@
   description = "nazarewk-iac/talos-configs";
 
   inputs.omnibus.url = "github:gtrunsec/omnibus";
-  inputs.nixpkgs.url = "github:NixOS/nixpkgs/nixpkgs-unstable";
+  inputs.nixpkgs.url = "github:NixOS/nixpkgs/nixos-unstable";
   inputs.talhelper.url = "github:budimanjojo/talhelper";
   inputs.talhelper.inputs.nixpkgs.follows = "nixpkgs";
 

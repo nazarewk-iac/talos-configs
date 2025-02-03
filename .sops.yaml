@@ -1,0 +1,5 @@
+creation_rules:
+  # see yubikey inventory at https://github.com/nazarewk-iac/nix-configs/blob/48f050928f2bbf29c6fbc63c53362f30300cdb1d/modules/hardware/yubikey/yubikeys.nix
+  - age:
+      "age1yubikey1qfx38en49qfpyjf5hwn8dch6c0jvvtus29pvwgqlze35rraea00y6dw6rwv\
+      ,age1yubikey1qf4cjj3ksn60z9hnezkwysvgcll7y3mfxzwzdrzgkfkqe9thmczg6xmmfz9"
